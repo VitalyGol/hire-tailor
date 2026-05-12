@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
+from core.config import Config
 
 
 app = Flask(__name__)
@@ -10,6 +11,8 @@ def hello_world():
     return 'Hello, World!'
 
 if __name__ == '__main__':
-    app.run(debug=True)
-
+    if Config.FLASK_ENV == "development":
+        app.run(debug=True)
+    else:
+        app.run(debug=False)
 
