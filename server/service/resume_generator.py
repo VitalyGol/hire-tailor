@@ -1,7 +1,7 @@
 
 from core.base_provider import BaseProvider
-from prompt_builder import PromptBuilder
-from server.models.ai.resume_model import ResumeModel
+from service.prompt_builder import PromptBuilder
+from models.ai.resume_model import ResumeModel
 
 class ResumeGenerator:
     def __init__(self, provider: BaseProvider, prompt_builder: PromptBuilder):
