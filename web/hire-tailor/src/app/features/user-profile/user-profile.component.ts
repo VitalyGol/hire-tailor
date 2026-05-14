@@ -10,6 +10,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { provideNativeDateAdapter } from '@angular/material/core';
+import { finalize } from 'rxjs';
+
+import { UploadService } from '../../services/upload.service';
 
 export interface UserProfile {
   personalInfo: {
@@ -126,6 +129,7 @@ const MAX_RESUME_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 })
 export class UserProfileComponent {
   private readonly snackBar = inject(MatSnackBar);
+  private readonly uploadService = inject(UploadService);
 
   protected readonly languageLevels: readonly UserLanguageLevel[] = [
     'Beginner',
@@ -136,6 +140,7 @@ export class UserProfileComponent {
   ];
 
   protected readonly selectedResumeFileName = signal<string | null>(null);
+  protected readonly isUploadingResume = signal(false);
   protected readonly hasResumeFile = computed(() => this.selectedResumeFileName() !== null);
 
   protected readonly profileForm: UserProfileForm = new FormGroup({
@@ -261,7 +266,28 @@ export class UserProfileComponent {
     }
 
     this.selectedResumeFileName.set(fileName);
-    this.snackBar.open('Resume file selected successfully.', 'Close', { duration: 3000 });
+    this.isUploadingResume.set(true);
+
+    this.uploadService
+      .uploadResume(file)
+      .pipe(finalize(() => this.isUploadingResume.set(false)))
+      .subscribe({
+        next: (response) => {
+          console.log('Resume upload response:', response);
+          try {
+     
+
+      this.loadProfileFromResume(response);
+    } catch {
+      this.snackBar.open('Saved profile data could not be loaded.', 'Close', { duration: 4000 });
+    }
+          
+        },
+        error: () => {
+          this.clearResumeInput(input);
+          this.snackBar.open('Resume upload failed. Please try again.', 'Close', { duration: 4000 });
+        },
+      });
   }
 
   protected hasControlError(control: AbstractControl, errorCode: string): boolean {
@@ -379,22 +405,26 @@ export class UserProfileComponent {
         return;
       }
 
-      this.personalInfo.setValue(parsedProfile.personalInfo);
-      this.replaceFormArray(this.workExperience, parsedProfile.workExperience, (item) =>
-        this.createWorkExperienceForm(item),
-      );
-      this.replaceFormArray(this.education, parsedProfile.education, (item) =>
-        this.createEducationForm(item),
-      );
-      this.replaceFormArray(this.courses, parsedProfile.courses, (item) =>
-        this.createCourseCertificateForm(item),
-      );
-      this.replaceFormArray(this.languages, parsedProfile.languages, (item) =>
-        this.createLanguageForm(item),
-      );
+      this.loadProfileFromResume(parsedProfile);
     } catch {
       this.snackBar.open('Saved profile data could not be loaded.', 'Close', { duration: 4000 });
     }
+  }
+
+  private loadProfileFromResume(profile: UserProfile): void {
+    this.personalInfo.setValue(profile.personalInfo);
+      this.replaceFormArray(this.workExperience, profile.workExperience, (item) =>
+        this.createWorkExperienceForm(item),
+      );
+      this.replaceFormArray(this.education, profile.education, (item) =>
+        this.createEducationForm(item),
+      );
+      this.replaceFormArray(this.courses, profile.courses, (item) =>
+        this.createCourseCertificateForm(item),
+      );
+      this.replaceFormArray(this.languages, profile.languages, (item) =>
+        this.createLanguageForm(item),
+      );
   }
 
   private replaceFormArray<TControl extends AbstractControl, TValue>(

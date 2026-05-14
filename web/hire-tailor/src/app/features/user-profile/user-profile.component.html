@@ -12,13 +12,6 @@
     </div>
   </header>
 
-  @if (hasResumeFile()) {
-    <div class="resume-file">
-      <mat-icon aria-hidden="true">picture_as_pdf</mat-icon>
-      <span>{{ selectedResumeFileName() }}</span>
-    </div>
-  }
-
   <form class="profile-form" (ngSubmit)="saveProfile()">
     <mat-card class="profile-card" formGroupName="personalInfo">
       <mat-card-header>
@@ -362,9 +355,14 @@
         accept="application/pdf,.pdf"
         (change)="onResumeFileSelected($event)"
       />         
-       <button mat-stroked-button type="button" (click)="resumeInput.click()">
+       <button
+        mat-stroked-button
+        type="button"
+        [disabled]="isUploadingResume()"
+        (click)="resumeInput.click()"
+      >
         <mat-icon>upload_file</mat-icon>
-        Extract Data From Resume
+        {{ isUploadingResume() ? 'Uploading Resume' : 'Extract Data From Resume' }}
       </button>
       <button mat-flat-button type="submit">
         <mat-icon>save</mat-icon>

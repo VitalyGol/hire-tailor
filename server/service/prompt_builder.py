@@ -12,9 +12,11 @@ class PromptBuilder:
         return prompt
         
     def extract_info_prompt(self, resume: str):
-        prompt = {
+        prompt =  {
             "id": "pmpt_6a0575331ae88197a60f5cfd70c72fab0e0c4e855c31cb5b",
-            "version": "1",
-            "input": resume
+            "version": "2",
+            "variables": {
+            "resume": resume
+            }
         }
         return prompt
