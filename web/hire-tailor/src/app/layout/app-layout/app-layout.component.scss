@@ -1,0 +1,133 @@
+:host {
+  display: block;
+  height: 100dvh;
+}
+
+.app-shell {
+  height: 100%;
+  background: #f7f8fa;
+}
+
+.app-sidebar {
+  width: 280px;
+  border-right: 1px solid #e1e4ea;
+  background: #ffffff;
+  color: #172033;
+}
+
+.sidebar-content {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  padding: 18px 12px 14px;
+  box-sizing: border-box;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 10px 18px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.brand-mark {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 8px;
+  background: #172033;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.brand-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.nav-list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+}
+
+.nav-item {
+  --mdc-list-list-item-container-shape: 8px;
+  --mdc-list-list-item-label-text-color: #445066;
+  --mdc-list-list-item-leading-icon-color: #687386;
+  --mdc-list-list-item-hover-label-text-color: #172033;
+  --mdc-list-list-item-hover-leading-icon-color: #172033;
+  --mdc-list-list-item-focus-label-text-color: #172033;
+  --mdc-list-list-item-focus-leading-icon-color: #172033;
+
+  border-radius: 8px;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.nav-item:hover {
+  background: #eef2f7;
+}
+
+.nav-item.active-link {
+  --mdc-list-list-item-label-text-color: #172033;
+  --mdc-list-list-item-leading-icon-color: #172033;
+
+  background: #e6ebf3;
+  font-weight: 600;
+}
+
+.profile-section {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid #e8ebf0;
+}
+
+.profile-link {
+  display: flex;
+}
+
+.app-content {
+  min-height: 100%;
+  background: #f7f8fa;
+}
+
+.mobile-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: 56px;
+  border-bottom: 1px solid #e1e4ea;
+  background: rgba(255, 255, 255, 0.94);
+  color: #172033;
+  font-weight: 700;
+  backdrop-filter: blur(14px);
+}
+
+.content-frame {
+  min-height: 100dvh;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 959px) {
+  .app-sidebar {
+    width: min(320px, 86vw);
+    border-right: 0;
+  }
+
+  .content-frame {
+    min-height: calc(100dvh - 56px);
+    padding: 16px;
+  }
+}
