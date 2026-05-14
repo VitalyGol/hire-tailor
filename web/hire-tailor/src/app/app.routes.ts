@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 
 import { AppLayoutComponent } from './layout/app-layout/app-layout.component';
 import { PlaceholderPageComponent } from './pages/placeholder-page/placeholder-page.component';
+import { UserProfileComponent } from './features/user-profile/user-profile.component';
 
 export const routes: Routes = [
   {
@@ -34,8 +35,8 @@ export const routes: Routes = [
         data: { title: 'Settings' },
       },
       {
-        path: 'profile',
-        component: PlaceholderPageComponent,
+        path: 'user-profile',
+        component: UserProfileComponent,
         data: { title: 'User Profile' },
       },
     ],
