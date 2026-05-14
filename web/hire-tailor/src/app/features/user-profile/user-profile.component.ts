@@ -1,4 +1,13 @@
-import { AbstractControl, FormArray, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormArray,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -233,9 +242,9 @@ export class UserProfileComponent {
       });
       return;
     }
-    debugger;
-    this.storage.setItem(STORAGE_KEY, JSON.stringify(this.toUserProfile()));
     
+    this.storage.setItem(STORAGE_KEY, JSON.stringify(this.toUserProfile()));
+
     this.snackBar.open('Profile saved successfully.', 'Close', { duration: 3000 });
   }
 
@@ -275,20 +284,21 @@ export class UserProfileComponent {
       .uploadResume(file)
       .pipe(finalize(() => this.isUploadingResume.set(false)))
       .subscribe({
-        next: (response) => {
+        next: response => {
           console.log('Resume upload response:', response);
           try {
-     
-
-      this.loadProfileFromResume(response);
-    } catch {
-      this.snackBar.open('Saved profile data could not be loaded.', 'Close', { duration: 4000 });
-    }
-          
+            this.loadProfileFromResume(response);
+          } catch {
+            this.snackBar.open('Saved profile data could not be loaded.', 'Close', {
+              duration: 4000,
+            });
+          }
         },
         error: () => {
           this.clearResumeInput(input);
-          this.snackBar.open('Resume upload failed. Please try again.', 'Close', { duration: 4000 });
+          this.snackBar.open('Resume upload failed. Please try again.', 'Close', {
+            duration: 4000,
+          });
         },
       });
   }
@@ -308,12 +318,14 @@ export class UserProfileComponent {
   private createWorkExperienceForm(value?: WorkExperience): WorkExperienceForm {
     return new FormGroup(
       {
-        startDate: new FormControl(this.parseDate(value?.startDate), { validators: Validators.required }),
+        startDate: new FormControl(this.parseDate(value?.startDate), {
+          validators: Validators.required,
+        }),
         endDate: new FormControl(this.parseDate(value?.endDate ?? null)),
         companyName: this.createTextControl([Validators.required], value?.companyName),
         position: this.createTextControl([Validators.required], value?.position),
         projects: new FormArray<WorkProjectForm>(
-          (value?.projects.length ? value.projects : [undefined]).map((project) =>
+          (value?.projects.length ? value.projects : [undefined]).map(project =>
             this.createWorkProjectForm(project),
           ),
         ),
@@ -337,7 +349,9 @@ export class UserProfileComponent {
       {
         institution: this.createTextControl([Validators.required], value?.institution),
         specialization: this.createTextControl([Validators.required], value?.specialization),
-        startDate: new FormControl(this.parseDate(value?.startDate), { validators: Validators.required }),
+        startDate: new FormControl(this.parseDate(value?.startDate), {
+          validators: Validators.required,
+        }),
         endDate: new FormControl(this.parseDate(value?.endDate ?? null)),
       },
       { validators: this.endDateAfterStartDateValidator() },
@@ -348,8 +362,13 @@ export class UserProfileComponent {
     return new FormGroup({
       title: this.createTextControl([Validators.required], value?.title),
       organization: this.createTextControl([Validators.required], value?.organization),
-      issueDate: new FormControl(this.parseDate(value?.issueDate), { validators: Validators.required }),
-      certificateUrl: this.createTextControl([this.optionalUrlValidator()], value?.certificateUrl ?? ''),
+      issueDate: new FormControl(this.parseDate(value?.issueDate), {
+        validators: Validators.required,
+      }),
+      certificateUrl: this.createTextControl(
+        [this.optionalUrlValidator()],
+        value?.certificateUrl ?? '',
+      ),
     });
   }
 
@@ -416,18 +435,16 @@ export class UserProfileComponent {
 
   private loadProfileFromResume(profile: UserProfile): void {
     this.personalInfo.setValue(profile.personalInfo);
-      this.replaceFormArray(this.workExperience, profile.workExperience, (item) =>
-        this.createWorkExperienceForm(item),
-      );
-      this.replaceFormArray(this.education, profile.education, (item) =>
-        this.createEducationForm(item),
-      );
-      this.replaceFormArray(this.courses, profile.courses, (item) =>
-        this.createCourseCertificateForm(item),
-      );
-      this.replaceFormArray(this.languages, profile.languages, (item) =>
-        this.createLanguageForm(item),
-      );
+    this.replaceFormArray(this.workExperience, profile.workExperience, item =>
+      this.createWorkExperienceForm(item),
+    );
+    this.replaceFormArray(this.education, profile.education, item =>
+      this.createEducationForm(item),
+    );
+    this.replaceFormArray(this.courses, profile.courses, item =>
+      this.createCourseCertificateForm(item),
+    );
+    this.replaceFormArray(this.languages, profile.languages, item => this.createLanguageForm(item));
   }
 
   private replaceFormArray<TControl extends AbstractControl, TValue>(
@@ -436,35 +453,35 @@ export class UserProfileComponent {
     createControl: (value: TValue) => TControl,
   ): void {
     formArray.clear();
-    values.forEach((value) => formArray.push(createControl(value)));
+    values.forEach(value => formArray.push(createControl(value)));
   }
 
   private toUserProfile(): UserProfile {
     return {
       personalInfo: this.personalInfo.getRawValue(),
-      workExperience: this.workExperience.controls.map((experience) => ({
+      workExperience: this.workExperience.controls.map(experience => ({
         startDate: this.formatDate(experience.controls.startDate.value),
         endDate: this.formatNullableDate(experience.controls.endDate.value),
         companyName: experience.controls.companyName.value,
         position: experience.controls.position.value,
-        projects: experience.controls.projects.controls.map((project) => ({
+        projects: experience.controls.projects.controls.map(project => ({
           projectName: project.controls.projectName.value,
           projectDescription: project.controls.projectDescription.value,
         })),
       })),
-      education: this.education.controls.map((education) => ({
+      education: this.education.controls.map(education => ({
         institution: education.controls.institution.value,
         specialization: education.controls.specialization.value,
         startDate: this.formatDate(education.controls.startDate.value),
         endDate: this.formatNullableDate(education.controls.endDate.value),
       })),
-      courses: this.courses.controls.map((course) => ({
+      courses: this.courses.controls.map(course => ({
         title: course.controls.title.value,
         organization: course.controls.organization.value,
         issueDate: this.formatDate(course.controls.issueDate.value),
         certificateUrl: course.controls.certificateUrl.value.trim() || null,
       })),
-      languages: this.languages.controls.map((language) => ({
+      languages: this.languages.controls.map(language => ({
         language: language.controls.language.value,
         level: language.controls.level.value ?? 'Beginner',
       })),

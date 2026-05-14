@@ -5,11 +5,7 @@
       <h1>User Profile</h1>
     </div>
 
-    <div class="header-actions">
-     
-     
- 
-    </div>
+    <div class="header-actions"></div>
   </header>
 
   <form class="profile-form" (ngSubmit)="saveProfile()">
@@ -62,7 +58,11 @@
       </mat-card-header>
       <mat-card-content formArrayName="workExperience">
         <mat-accordion multi>
-          @for (experience of workExperience.controls; track experience; let experienceIndex = $index) {
+          @for (
+            experience of workExperience.controls;
+            track experience;
+            let experienceIndex = $index
+          ) {
             <mat-expansion-panel [formGroupName]="experienceIndex" expanded>
               <mat-expansion-panel-header>
                 <mat-panel-title>
@@ -76,7 +76,11 @@
               <div class="form-grid two-columns">
                 <mat-form-field appearance="outline">
                   <mat-label>Start date</mat-label>
-                  <input matInput [matDatepicker]="experienceStartPicker" formControlName="startDate" />
+                  <input
+                    matInput
+                    [matDatepicker]="experienceStartPicker"
+                    formControlName="startDate"
+                  />
                   <mat-datepicker-toggle matIconSuffix [for]="experienceStartPicker" />
                   <mat-datepicker #experienceStartPicker />
                   @if (hasControlError(experience.controls.startDate, 'required')) {
@@ -140,7 +144,9 @@
                         <textarea matInput formControlName="projectDescription" rows="3"></textarea>
                         @if (hasControlError(project.controls.projectDescription, 'required')) {
                           <mat-error>Project description is required.</mat-error>
-                        } @else if (hasControlError(project.controls.projectDescription, 'minlength')) {
+                        } @else if (
+                          hasControlError(project.controls.projectDescription, 'minlength')
+                        ) {
                           <mat-error>Description must be at least 20 characters.</mat-error>
                         }
                       </mat-form-field>
@@ -159,7 +165,12 @@
               </div>
 
               <mat-action-row>
-                <button mat-button type="button" color="warn" (click)="removeExperience(experienceIndex)">
+                <button
+                  mat-button
+                  type="button"
+                  color="warn"
+                  (click)="removeExperience(experienceIndex)"
+                >
                   Remove experience
                 </button>
               </mat-action-row>
@@ -179,7 +190,11 @@
       </mat-card-header>
       <mat-card-content formArrayName="education">
         <mat-accordion multi>
-          @for (educationItem of education.controls; track educationItem; let educationIndex = $index) {
+          @for (
+            educationItem of education.controls;
+            track educationItem;
+            let educationIndex = $index
+          ) {
             <mat-expansion-panel [formGroupName]="educationIndex" expanded>
               <mat-expansion-panel-header>
                 <mat-panel-title>
@@ -206,7 +221,11 @@
 
                 <mat-form-field appearance="outline">
                   <mat-label>Start date</mat-label>
-                  <input matInput [matDatepicker]="educationStartPicker" formControlName="startDate" />
+                  <input
+                    matInput
+                    [matDatepicker]="educationStartPicker"
+                    formControlName="startDate"
+                  />
                   <mat-datepicker-toggle matIconSuffix [for]="educationStartPicker" />
                   <mat-datepicker #educationStartPicker />
                   @if (hasControlError(educationItem.controls.startDate, 'required')) {
@@ -226,7 +245,12 @@
               </div>
 
               <mat-action-row>
-                <button mat-button type="button" color="warn" (click)="removeEducation(educationIndex)">
+                <button
+                  mat-button
+                  type="button"
+                  color="warn"
+                  (click)="removeEducation(educationIndex)"
+                >
                   Remove education
                 </button>
               </mat-action-row>
@@ -348,14 +372,14 @@
     </mat-card>
 
     <div class="sticky-actions">
-       <input
+      <input
         #resumeInput
         class="file-input"
         type="file"
         accept="application/pdf,.pdf"
         (change)="onResumeFileSelected($event)"
-      />         
-       <button
+      />
+      <button
         mat-stroked-button
         type="button"
         [disabled]="isUploadingResume()"

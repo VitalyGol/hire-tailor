@@ -57,7 +57,7 @@ export class AppLayoutComponent {
   ];
 
   protected readonly isCompact = toSignal(
-    this.breakpointObserver.observe('(max-width: 959px)').pipe(map((state) => state.matches)),
+    this.breakpointObserver.observe('(max-width: 959px)').pipe(map(state => state.matches)),
     { initialValue: false },
   );
 
@@ -68,7 +68,7 @@ export class AppLayoutComponent {
   );
 
   protected toggleSidenav(): void {
-    this.isMobileSidenavOpen.update((isOpen) => !isOpen);
+    this.isMobileSidenavOpen.update(isOpen => !isOpen);
   }
 
   protected closeSidenavAfterNavigation(): void {
