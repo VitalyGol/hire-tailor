@@ -1,5 +1,6 @@
 
 from core.base_provider import BaseProvider
+from models.ai.extract_models import UserProfile
 from service.prompt_builder import PromptBuilder
 from models.ai.resume_model import ResumeModel
 
@@ -11,4 +12,9 @@ class ResumeGenerator:
     def generate_resume(self, language: str, job_requirement: str, resume: str):
         prompt = self.prompt_builder.get_resume_prompt(language, job_requirement, resume)
         data = self.provider.get_data(prompt, text_format=ResumeModel)
+        return data
+    
+    def extract_info(self, resume: str):
+        prompt = self.prompt_builder.extract_info_prompt(resume)
+        data = self.provider.get_data(prompt, text_format=UserProfile)
         return data
