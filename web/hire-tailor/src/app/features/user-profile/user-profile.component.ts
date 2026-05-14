@@ -13,6 +13,7 @@ import { provideNativeDateAdapter } from '@angular/material/core';
 import { finalize } from 'rxjs';
 
 import { UploadService } from '../../services/upload.service';
+import { StorageService } from '../../services/storage.service';
 
 export interface UserProfile {
   personalInfo: {
@@ -130,6 +131,7 @@ const MAX_RESUME_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 export class UserProfileComponent {
   private readonly snackBar = inject(MatSnackBar);
   private readonly uploadService = inject(UploadService);
+  private readonly storage = inject(StorageService);
 
   protected readonly languageLevels: readonly UserLanguageLevel[] = [
     'Beginner',
@@ -231,8 +233,9 @@ export class UserProfileComponent {
       });
       return;
     }
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.toUserProfile()));
+    debugger;
+    this.storage.setItem(STORAGE_KEY, JSON.stringify(this.toUserProfile()));
+    
     this.snackBar.open('Profile saved successfully.', 'Close', { duration: 3000 });
   }
 
@@ -392,7 +395,7 @@ export class UserProfileComponent {
   }
 
   private loadProfileFromStorage(): void {
-    const rawProfile = localStorage.getItem(STORAGE_KEY);
+    const rawProfile = this.storage.getItem(STORAGE_KEY);
 
     if (!rawProfile) {
       return;

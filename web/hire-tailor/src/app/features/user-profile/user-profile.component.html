@@ -364,7 +364,7 @@
         <mat-icon>upload_file</mat-icon>
         {{ isUploadingResume() ? 'Uploading Resume' : 'Extract Data From Resume' }}
       </button>
-      <button mat-flat-button type="submit">
+      <button mat-flat-button (click)="saveProfile()">
         <mat-icon>save</mat-icon>
         Save Profile
       </button>
