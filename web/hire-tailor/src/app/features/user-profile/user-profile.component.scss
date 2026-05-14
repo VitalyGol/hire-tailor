@@ -196,9 +196,9 @@ mat-expansion-panel-header {
 
 .sticky-actions {
   position: sticky;
-  bottom: 18px;
+  bottom: 0px;
   z-index: 5;
-  padding: 14px 0 2px;
+  padding: 14px 10px;
   background: linear-gradient(180deg, rgba(247, 248, 250, 0), #f7f8fa 38%);
 }
 
