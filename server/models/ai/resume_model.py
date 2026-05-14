@@ -1,7 +1,7 @@
-from pedantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class ResumeModel(BaseModel):
-    job_name: str
-    candidate_profile: str
-    experience: list[dict]
-    education: list[dict]
+    model_config = ConfigDict(extra="forbid")
+
+    professional_title: str
+    professional_summary: str
