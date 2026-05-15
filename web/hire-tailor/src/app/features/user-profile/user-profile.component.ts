@@ -30,6 +30,8 @@ export interface UserProfile {
     lastName: string;
     email: string;
   };
+  professionalTitle?: string;
+  professionalSummary?: string;
   workExperience: WorkExperience[];
   education: Education[];
   courses: CourseCertificate[];
@@ -68,7 +70,7 @@ export interface UserLanguage {
   level: UserLanguageLevel;
 }
 
-type UserLanguageLevel = 'Beginner' | 'Intermediate' | 'Advanced' | 'Fluent' | 'Native';
+type UserLanguageLevel = 'beginner' | 'intermediate' | 'advanced' | 'fluent' | 'native';
 
 type PersonalInfoForm = FormGroup<{
   firstName: FormControl<string>;
@@ -143,11 +145,11 @@ export class UserProfileComponent {
   private readonly storage = inject(StorageService);
 
   protected readonly languageLevels: readonly UserLanguageLevel[] = [
-    'Beginner',
-    'Intermediate',
-    'Advanced',
-    'Fluent',
-    'Native',
+    'beginner',
+    'intermediate',
+    'advanced',
+    'fluent',
+    'native',
   ];
 
   protected readonly selectedResumeFileName = signal<string | null>(null);
@@ -483,7 +485,7 @@ export class UserProfileComponent {
       })),
       languages: this.languages.controls.map(language => ({
         language: language.controls.language.value,
-        level: language.controls.level.value ?? 'Beginner',
+        level: language.controls.level.value ?? 'beginner',
       })),
     };
   }

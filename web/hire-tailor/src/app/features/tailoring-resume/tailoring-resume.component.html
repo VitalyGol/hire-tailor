@@ -1,0 +1,77 @@
+<section class="resume-page">
+  @if (offer(); as offer) {
+    <header class="page-header">
+      <div class="title-block">
+        <p class="label">Job Position</p>
+        <h1>{{ offer.jobPosition }}</h1>
+        <p class="company">
+          <span>Company</span>
+          {{ offer.employerName }}
+        </p>
+      </div>
+
+      @if (offer.isArchived) {
+        <mat-chip-set aria-label="Offer status">
+          <mat-chip class="status-chip">
+            <mat-icon matChipAvatar>archive</mat-icon>
+            This offer is marked as not relevant
+          </mat-chip>
+        </mat-chip-set>
+      }
+    </header>
+
+    <div class="content-grid">
+      <main class="main-column">
+        <mat-card class="resume-card">
+          <mat-card-header>
+            <mat-card-title>Generated Resume</mat-card-title>
+            <mat-card-subtitle>Mock preview based on local profile and job data</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div style=" white-space: pre-wrap; font-family: monospace;">
+{{ jsonTest | json }}
+            </div>
+            
+          </mat-card-content>
+        </mat-card>
+      </main>
+
+      <aside class="side-column">
+        <mat-card class="analysis-card">
+          <mat-card-header>
+            <mat-card-title>Templates</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            
+          </mat-card-content>
+        </mat-card>
+      </aside>
+    </div>
+
+    <div class="actions sticky-actions">
+      <button mat-stroked-button type="button" (click)="backToTailoringDetails()">
+        <mat-icon>arrow_back</mat-icon>
+        Back to Tailoring Details
+      </button>
+      <button mat-stroked-button type="button" (click)="regenerateResume()">
+        <mat-icon>autorenew</mat-icon>
+        Regenerate Resume
+      </button>
+      <button mat-flat-button type="button" (click)="downloadResume()">
+        <mat-icon>download</mat-icon>
+        Download Resume
+      </button>
+    </div>
+  } @else {
+    <mat-card class="empty-card">
+      <mat-card-content>
+        <mat-icon>search_off</mat-icon>
+        <h1>Offer was not found</h1>
+        <button mat-flat-button type="button" (click)="backToNewTailoring()">
+          <mat-icon>arrow_back</mat-icon>
+          Back to New Tailoring
+        </button>
+      </mat-card-content>
+    </mat-card>
+  }
+</section>

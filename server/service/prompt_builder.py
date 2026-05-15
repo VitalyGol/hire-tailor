@@ -20,3 +20,15 @@ class PromptBuilder:
             }
         }
         return prompt
+    
+    def consultatnt_prompt(self, user_message: str, job_requirement: str, resume: str):
+        prompt = {
+            "id": "pmpt_6a06c8ba8128819592587478a484f8780511c3be90afb08b",
+            "version": "2",
+            "variables": {
+            "user_message": user_message,
+            "job_requirements": job_requirement,
+            "resume": resume
+            }
+        }
+        return prompt
