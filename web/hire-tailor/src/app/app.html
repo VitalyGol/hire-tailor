@@ -1,1 +1,7 @@
 <router-outlet />
+
+@if (spinnerVisible()) {
+<div class="global-spinner" role="status" aria-live="polite" aria-label="Loading">
+  <div class="global-spinner__indicator"></div>
+</div>
+}

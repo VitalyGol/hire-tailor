@@ -1,0 +1,25 @@
+.global-spinner {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--mat-sys-surface) 62%, transparent);
+  backdrop-filter: blur(1px);
+  cursor: wait;
+}
+
+.global-spinner__indicator {
+  width: 52px;
+  aspect-ratio: 1;
+  border: 5px solid color-mix(in srgb, var(--mat-sys-primary) 20%, transparent);
+  border-top-color: var(--mat-sys-primary);
+  border-radius: 50%;
+  animation: global-spinner-rotate 0.8s linear infinite;
+}
+
+@keyframes global-spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
