@@ -1,0 +1,55 @@
+<section class="tailoring-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Workspace</p>
+      <h1>New Tailoring</h1>
+    </div>
+  </header>
+
+  <form class="tailoring-form" [formGroup]="tailoringForm" (ngSubmit)="saveEmployer()">
+    <mat-card class="tailoring-card">
+      <mat-card-header>
+        <mat-card-title>Employer Details</mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="form-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>Employer Name</mat-label>
+            <input matInput formControlName="employerName" autocomplete="organization" />
+            @if (hasControlError(employerName, 'required')) {
+            <mat-error>Employer name is required.</mat-error>
+            } @else if (hasControlError(employerName, 'minlength')) {
+            <mat-error>Employer name must be at least 2 characters.</mat-error>
+            }
+          </mat-form-field>
+           <mat-form-field appearance="outline">
+            <mat-label>Job Position</mat-label>
+            <input matInput formControlName="jobPosition" autocomplete="organization" />
+            @if (hasControlError(jobPosition, 'required')) {
+            <mat-error>Job position is required.</mat-error>
+            } @else if (hasControlError(jobPosition, 'minlength')) {
+            <mat-error>Job position must be at least 2 characters.</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Job Requirements</mat-label>
+            <textarea matInput formControlName="jobRequirements" rows="7"></textarea>
+            @if (hasControlError(jobRequirements, 'required')) {
+            <mat-error>Job requirements are required.</mat-error>
+            } @else if (hasControlError(jobRequirements, 'minlength')) {
+            <mat-error>Job requirements must be at least 10 characters.</mat-error>
+            }
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <div class="form-actions">
+      <button mat-flat-button type="submit">Save</button>
+    </div>
+  </form>
+
+  
+</section>
