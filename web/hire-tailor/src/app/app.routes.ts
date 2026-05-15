@@ -21,6 +21,14 @@ export const routes: Routes = [
         data: { title: 'New Tailoring' },
       },
       {
+        path: 'tailoring/:id',
+        loadComponent: () =>
+          import('./features/tailoring-details/tailoring-details.component').then(
+            m => m.TailoringDetailsComponent,
+          ),
+        data: { title: 'Tailoring Details' },
+      },
+      {
         path: 'history',
         component: PlaceholderPageComponent,
         data: { title: 'History' },

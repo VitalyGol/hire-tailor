@@ -51,16 +51,6 @@ export class AppLayoutComponent {
       icon: 'history',
       route: '/history',
     },
-    {
-      label: 'Templates',
-      icon: 'article',
-      route: '/templates',
-    },
-    {
-      label: 'Settings',
-      icon: 'settings',
-      route: '/settings',
-    },
   ];
 
   protected readonly employerList: EmployerTailoringRequest[] = []
@@ -101,7 +91,7 @@ export class AppLayoutComponent {
       try {
         const parsedEmployers: EmployerTailoringRequest[] = JSON.parse(storedEmployers);
         this.employerList.length = 0; 
-        this.employerList.push(...parsedEmployers);
+        this.employerList.push(...parsedEmployers.filter(emp => !emp.isArchived));
       } catch (error) {
         console.error('Failed to parse employers from storage:', error);
       }

@@ -1,0 +1,163 @@
+:host {
+  display: block;
+}
+
+.details-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.title-block {
+  min-width: 0;
+}
+
+.label {
+  margin: 0 0 6px;
+  color: #687386;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  color: #172033;
+  font-size: clamp(1.65rem, 3vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.company {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 0;
+  color: #445066;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.company span {
+  color: #687386;
+  font-weight: 700;
+}
+
+mat-chip-set {
+  flex: 0 0 auto;
+}
+
+.status-chip {
+  --mdc-chip-container-shape-radius: 8px;
+  --mdc-chip-label-text-color: #263349;
+
+  background: #edf2f7;
+}
+
+.requirements-card,
+.empty-card {
+  border: 1px solid #e1e4ea;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 12px 34px rgba(23, 32, 51, 0.06);
+}
+
+mat-card-header {
+  padding: 20px 20px 0;
+}
+
+mat-card-title {
+  color: #172033;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+mat-card-content {
+  padding: 18px 20px 20px;
+}
+
+.requirements-card p {
+  margin: 0;
+  color: #2f3b52;
+  font-size: 0.98rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.sticky-actions {
+  position: sticky;
+  bottom: 0px;
+  z-index: 5;
+  padding: 14px 10px;
+  background: linear-gradient(180deg, rgba(247, 248, 250, 0), #f7f8fa 38%);
+}
+
+
+.actions button,
+.empty-card button {
+  border-radius: 8px;
+}
+
+.actions mat-icon,
+.empty-card button mat-icon {
+  margin-right: 6px;
+}
+
+.empty-card mat-card-content {
+  display: flex;
+  min-height: 260px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.empty-card mat-card-content > mat-icon {
+  width: 42px;
+  height: 42px;
+  color: #687386;
+  font-size: 42px;
+}
+
+.empty-card h1 {
+  font-size: clamp(1.45rem, 3vw, 1.9rem);
+}
+
+@media (max-width: 699px) {
+  .page-header {
+    flex-direction: column;
+  }
+
+  mat-chip-set {
+    width: 100%;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions button,
+  .empty-card button {
+    width: 100%;
+  }
+}
