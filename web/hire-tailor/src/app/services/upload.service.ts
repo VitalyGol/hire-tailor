@@ -5,7 +5,6 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { UserProfile } from '../features/user-profile/user-profile.component';
 
-
 @Injectable({
   providedIn: 'root',
 })

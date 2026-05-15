@@ -25,6 +25,20 @@
             <span matListItemTitle>{{ item.label }}</span>
           </a>
         }
+        <div mat-subheader>My jobs</div>
+        @for (employer of employerList; track employer.id) {
+          <a
+            mat-list-item
+            class="nav-item"
+            [routerLink]="['/tailoring', employer.id]"
+            routerLinkActive="active-link"
+            (click)="closeSidenavAfterNavigation()"
+          >
+            <mat-icon matListItemIcon>work_outline</mat-icon>
+            <div matListItemTitle>{{employer.jobPosition}}</div>
+            <div matListItemLine>{{employer.employerName}}</div>
+          </a>
+        }
       </mat-nav-list>
 
       <div class="profile-section">

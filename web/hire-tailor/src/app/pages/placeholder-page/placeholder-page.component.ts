@@ -14,7 +14,7 @@ export class PlaceholderPageComponent {
   private readonly route = inject(ActivatedRoute);
 
   private readonly routeTitle = toSignal(
-    this.route.data.pipe(map((data) => String(data['title'] ?? 'New Tailoring'))),
+    this.route.data.pipe(map(data => String(data['title'] ?? 'New Tailoring'))),
     { initialValue: 'New Tailoring' },
   );
 
