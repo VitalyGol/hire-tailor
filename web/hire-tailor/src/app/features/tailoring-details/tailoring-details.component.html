@@ -1,0 +1,63 @@
+<section class="details-page">
+  @if (offer(); as offer) {
+    <header class="page-header">
+      <div class="title-block">
+        <p class="label">Job Position</p>
+        <h1>{{ offer.jobPosition }}</h1>
+        <p class="company">
+          <span>Company</span>
+          {{ offer.employerName }}
+        </p>
+      </div>
+
+      @if (offer.isArchived) {
+        <mat-chip-set aria-label="Offer status">
+          <mat-chip class="status-chip">
+            <mat-icon matChipAvatar>archive</mat-icon>
+            This offer is marked as not relevant
+          </mat-chip>
+        </mat-chip-set>
+      }
+    </header>
+
+    <mat-card class="requirements-card">
+      <mat-card-header>
+        <mat-card-title>Job Requirements</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p>{{ offer.jobRequirements }}</p>
+      </mat-card-content>
+    </mat-card>
+
+    <div class="actions sticky-actions">
+      <button
+        mat-stroked-button
+        type="button"
+        [disabled]="offer.isArchived"
+        (click)="markAsNotRelevant()"
+      >
+        <mat-icon>archive</mat-icon>
+        Mark as Not Relevant
+      </button>
+      <button mat-flat-button type="button" (click)="generateResume()">
+        <mat-icon>description</mat-icon>
+        Generate Resume
+      </button>
+      <button mat-stroked-button type="button" (click)="askAiConsultant()">
+        <mat-icon>smart_toy</mat-icon>
+        Ask AI Consultant
+      </button>
+    </div>
+  } @else {
+    <mat-card class="empty-card">
+      <mat-card-content>
+        <mat-icon>search_off</mat-icon>
+        <h1>Offer was not found</h1>
+        <button mat-flat-button type="button" (click)="backToNewTailoring()">
+          <mat-icon>arrow_back</mat-icon>
+          Back to New Tailoring
+        </button>
+      </mat-card-content>
+    </mat-card>
+  }
+</section>

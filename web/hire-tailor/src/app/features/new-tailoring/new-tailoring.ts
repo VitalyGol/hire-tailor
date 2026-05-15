@@ -20,6 +20,7 @@ export interface EmployerTailoringRequest {
   jobPosition: string;
   jobRequirements: string;
   createdAt: string;
+  isArchived?: boolean;
 }
 
 type NewTailoringForm = FormGroup<{
@@ -88,6 +89,7 @@ export class NewTailoring {
       jobPosition: formValue.jobPosition.trim(),
       jobRequirements: formValue.jobRequirements.trim(),
       createdAt: new Date().toISOString(),
+      isArchived: false,
     };
 
     const employers = this.loadEmployersFromStorage();
