@@ -1,4 +1,7 @@
-class PromptBuilder:
+from core.base_prompt_builder import BasePromptBuilder
+
+
+class PromptBuilder(BasePromptBuilder):
     def get_resume_prompt(self, language: str, job_requirement: str, resume: str):
         prompt = {
             "id": "pmpt_6a0422fe89208194a3a61dc00ecab910066104b9e7dc11a6",
