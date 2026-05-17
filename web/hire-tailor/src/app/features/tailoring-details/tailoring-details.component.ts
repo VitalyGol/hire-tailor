@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
-import { EmployerTailoringRequest } from '../new-tailoring/new-tailoring';
+import { EmployerTailoringRequest } from '../../models/shared/employer-tailoring-request.model';
 import { PageCommunicationService } from '../../services/page-communication.service';
 import { TailoringStorageService } from '../../services/tailoring-storage.service';
 

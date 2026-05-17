@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import {
   AbstractControl,
   FormControl,
@@ -6,28 +5,15 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { PageCommunicationService } from '../../services/page-communication.service';
-
-export interface EmployerTailoringRequest {
-  id: string;
-  employerName: string;
-  jobPosition: string;
-  jobRequirements: string;
-  createdAt: string;
-  isArchived?: boolean;
-}
-
-type NewTailoringForm = FormGroup<{
-  employerName: FormControl<string>;
-  jobPosition: FormControl<string>;
-  jobRequirements: FormControl<string>;
-}>;
+import { EmployerTailoringRequest } from '../../models/shared/employer-tailoring-request.model';
+import { NewTailoringForm } from '../../models/new-tailoring/new-tailoring-form.model';
 
 const EMPLOYERS_STORAGE_KEY = 'hiretailor_employers';
 

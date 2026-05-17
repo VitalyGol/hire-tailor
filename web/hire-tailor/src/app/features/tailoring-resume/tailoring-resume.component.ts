@@ -1,37 +1,64 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { JsonPipe } from '@angular/common';
+import {
+  AbstractControl,
+  FormArray,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
+import { provideNativeDateAdapter } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatDividerModule } from '@angular/material/divider';
 import {
   MAT_DIALOG_DATA,
   MatDialog,
   MatDialogModule,
 } from '@angular/material/dialog';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectChange, MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
 
-import { EmployerTailoringRequest } from '../new-tailoring/new-tailoring';
+import { EmployerTailoringRequest } from '../../models/shared/employer-tailoring-request.model';
 import {
   CourseCertificate,
   Education,
   UserLanguage,
+  UserLanguageLevel,
   UserProfile,
   WorkExperience,
   WorkProject,
-} from '../user-profile/user-profile.component';
+} from '../../models/shared/user-profile.model';
+import {
+  CourseCertificateForm,
+  EducationForm,
+  GeneratedResumePreview,
+  PersonalInfoForm,
+  ResumeForm,
+  ResumeTemplate,
+  ResumeTemplateLanguage,
+  TemplatePreviewDialogData,
+  UserLanguageForm,
+  WorkExperienceForm,
+  WorkProjectForm,
+} from '../../models/tailoring-resume/tailoring-resume.model';
 import { TailoringStorageService } from '../../services/tailoring-storage.service';
 import { UploadService } from '../../services/upload.service';
 
 const USER_PROFILE_STORAGE_KEY = 'hiretailor_user_profile';
-const KEYWORD_LIMIT = 18;
 const NO_PREVIEW_IMAGE =
   'data:image/svg+xml;charset=UTF-8,' +
   encodeURIComponent(`
@@ -43,53 +70,6 @@ const NO_PREVIEW_IMAGE =
   <text x="320" y="598" text-anchor="middle" font-family="Arial, sans-serif" font-size="42" font-weight="700" fill="#687386">No preview</text>
 </svg>
 `);
-const STOP_WORDS = new Set([
-  'and',
-  'are',
-  'for',
-  'from',
-  'have',
-  'the',
-  'this',
-  'that',
-  'with',
-  'you',
-  'your',
-  'will',
-  'about',
-  'ability',
-  'able',
-  'experience',
-  'knowledge',
-  'requirements',
-  'skills',
-  'work',
-  'working',
-]);
-
-type ResumeTemplateLanguage = 'Hebrew' | 'English';
-
-interface ResumeTemplate {
-  readonly TemplateId: string;
-  readonly TemplateName: string;
-  readonly Language: ResumeTemplateLanguage;
-}
-
-interface GeneratedResumePreview {
-  readonly fullName: string;
-  readonly professionalTitle: string;
-  readonly professionalSummary: string;
-  readonly skills: readonly string[];
-  readonly workExperience: readonly WorkExperience[];
-  readonly education: readonly Education[];
-  readonly courses: readonly CourseCertificate[];
-  readonly languages: readonly UserLanguage[];
-}
-
-interface TemplatePreviewDialogData {
-  readonly template: ResumeTemplate;
-  readonly resume: GeneratedResumePreview | null;
-}
 
 @Component({
   selector: 'app-template-preview-dialog',
@@ -192,15 +172,19 @@ export class TemplatePreviewDialogComponent {
     MatButtonModule,
     MatCardModule,
     MatChipsModule,
+    MatDatepickerModule,
     MatDividerModule,
     MatDialogModule,
+    MatExpansionModule,
     MatFormFieldModule,
     MatIconModule,
+    MatInputModule,
     MatProgressBarModule,
     MatSelectModule,
     MatSnackBarModule,
-    JsonPipe
+    ReactiveFormsModule
   ],
+  providers: [provideNativeDateAdapter()],
   templateUrl: './tailoring-resume.component.html',
   styleUrl: './tailoring-resume.component.scss',
 })
@@ -213,6 +197,13 @@ export class TailoringResumeComponent {
   private readonly tailoringStorage = inject(TailoringStorageService);
   private readonly uploadService = inject(UploadService);
 
+  protected readonly languageLevels: readonly UserLanguageLevel[] = [
+    'beginner',
+    'intermediate',
+    'advanced',
+    'fluent',
+    'native',
+  ];
   protected readonly languages: readonly ResumeTemplateLanguage[] = ['Hebrew', 'English'];
   protected readonly templates: readonly ResumeTemplate[] = [
     { TemplateId: 'he-modern', TemplateName: 'Modern Hebrew', Language: 'Hebrew' },
@@ -230,7 +221,7 @@ export class TailoringResumeComponent {
   protected readonly requestedId = signal<string | null>(null);
   protected readonly userProfile = signal<UserProfile | null>(this.loadUserProfileFromStorage());
 
-  protected jsonTest = {};
+  protected readonly resumeForm: ResumeForm = this.createResumeForm(this.userProfile());
 
   protected readonly filteredTemplates = computed(() =>
     this.templates.filter(template => template.Language === this.selectedLanguage()),
@@ -270,7 +261,7 @@ export class TailoringResumeComponent {
       fullName,
       professionalTitle,
       professionalSummary,
-      skills: this.deriveSkills(currentOffer.jobRequirements, profile),
+      skills: [],
       workExperience: profile.workExperience,
       education: profile.education,
       courses: profile.courses,
@@ -288,6 +279,98 @@ export class TailoringResumeComponent {
         this.requestedId.set(id);
         this.offer.set(id ? this.tailoringStorage.findEmployerById(id) : null);
       });
+  }
+
+  protected get personalInfo(): PersonalInfoForm {
+    return this.resumeForm.controls.personalInfo;
+  }
+
+  protected get workExperience(): FormArray<WorkExperienceForm> {
+    return this.resumeForm.controls.workExperience;
+  }
+
+  protected get education(): FormArray<EducationForm> {
+    return this.resumeForm.controls.education;
+  }
+
+  protected get courses(): FormArray<CourseCertificateForm> {
+    return this.resumeForm.controls.courses;
+  }
+
+  protected get resumeLanguages(): FormArray<UserLanguageForm> {
+    return this.resumeForm.controls.languages;
+  }
+
+  protected getExperienceProjects(experienceIndex: number): FormArray<WorkProjectForm> {
+    return this.workExperience.at(experienceIndex).controls.projects;
+  }
+
+  protected addExperience(): void {
+    this.workExperience.push(this.createWorkExperienceForm());
+  }
+
+  protected removeExperience(index: number): void {
+    this.workExperience.removeAt(index);
+  }
+
+  protected addProject(experienceIndex: number): void {
+    this.getExperienceProjects(experienceIndex).push(this.createWorkProjectForm());
+  }
+
+  protected removeProject(experienceIndex: number, projectIndex: number): void {
+    this.getExperienceProjects(experienceIndex).removeAt(projectIndex);
+  }
+
+  protected addEducation(): void {
+    this.education.push(this.createEducationForm());
+  }
+
+  protected removeEducation(index: number): void {
+    this.education.removeAt(index);
+  }
+
+  protected addCourse(): void {
+    this.courses.push(this.createCourseCertificateForm());
+  }
+
+  protected removeCourse(index: number): void {
+    this.courses.removeAt(index);
+  }
+
+  protected addLanguage(): void {
+    this.resumeLanguages.push(this.createLanguageForm());
+  }
+
+  protected removeLanguage(index: number): void {
+    this.resumeLanguages.removeAt(index);
+  }
+
+  protected saveResumeForm(): void {
+    if (this.resumeForm.invalid) {
+      this.resumeForm.markAllAsTouched();
+      this.snackBar.open('Please fix the highlighted fields before saving.', 'Close', {
+        duration: 4000,
+      });
+      return;
+    }
+
+    const profile = this.toUserProfile();
+    this.userProfile.set(profile);
+
+    try {
+      localStorage.setItem(USER_PROFILE_STORAGE_KEY, JSON.stringify(profile));
+      this.snackBar.open('Resume data saved successfully.', 'Close', { duration: 3000 });
+    } catch {
+      this.snackBar.open('Resume data could not be saved.', 'Close', { duration: 4000 });
+    }
+  }
+
+  protected hasControlError(control: AbstractControl, errorCode: string): boolean {
+    return control.hasError(errorCode) && (control.touched || control.dirty);
+  }
+
+  protected hasDateRangeError(control: AbstractControl): boolean {
+    return control.hasError('endDateBeforeStartDate') && (control.touched || control.dirty);
   }
 
   protected downloadResume(): void {
@@ -337,10 +420,9 @@ export class TailoringResumeComponent {
     this.uploadService.generateResume(
       this.userProfile()!,
       this.offer()?.jobRequirements ?? '',
-      'English',
+      this.selectedTemplate()?.Language,
     ).subscribe({
-      next: updatedProfile => {
-        this.jsonTest = updatedProfile;
+      next: () => {
         this.snackBar.open('Resume regenerated successfully', 'Close', { duration: 3000 });
       },
       error: () => {
@@ -348,6 +430,203 @@ export class TailoringResumeComponent {
       },
     });
     this.snackBar.open('Resume regeneration will be available soon', 'Close', { duration: 3000 });
+  }
+
+  private createResumeForm(profile: UserProfile | null): ResumeForm {
+    return new FormGroup({
+      personalInfo: new FormGroup({
+        firstName: this.createTextControl(
+          [Validators.required, Validators.minLength(2)],
+          profile?.personalInfo.firstName,
+        ),
+        lastName: this.createTextControl(
+          [Validators.required, Validators.minLength(2)],
+          profile?.personalInfo.lastName,
+        ),
+        email: this.createTextControl([Validators.required, Validators.email], profile?.personalInfo.email),
+      }),
+      professionalTitle: this.createTextControl([], profile?.professionalTitle),
+      professionalSummary: this.createTextControl([], profile?.professionalSummary),
+      workExperience: new FormArray<WorkExperienceForm>(
+        (profile?.workExperience.length ? profile.workExperience : [undefined]).map(experience =>
+          this.createWorkExperienceForm(experience),
+        ),
+      ),
+      education: new FormArray<EducationForm>(
+        (profile?.education.length ? profile.education : [undefined]).map(education =>
+          this.createEducationForm(education),
+        ),
+      ),
+      courses: new FormArray<CourseCertificateForm>(
+        (profile?.courses.length ? profile.courses : [undefined]).map(course =>
+          this.createCourseCertificateForm(course),
+        ),
+      ),
+      languages: new FormArray<UserLanguageForm>(
+        (profile?.languages.length ? profile.languages : [undefined]).map(language =>
+          this.createLanguageForm(language),
+        ),
+      ),
+    });
+  }
+
+  private createTextControl(validators: ValidatorFn[] = [], value = ''): FormControl<string> {
+    return new FormControl(value ?? '', { nonNullable: true, validators });
+  }
+
+  private createWorkExperienceForm(value?: WorkExperience): WorkExperienceForm {
+    return new FormGroup(
+      {
+        startDate: new FormControl(this.parseDate(value?.startDate), {
+          validators: Validators.required,
+        }),
+        endDate: new FormControl(this.parseDate(value?.endDate ?? null)),
+        companyName: this.createTextControl([Validators.required], value?.companyName),
+        position: this.createTextControl([Validators.required], value?.position),
+        projects: new FormArray<WorkProjectForm>(
+          (value?.projects.length ? value.projects : [undefined]).map(project =>
+            this.createWorkProjectForm(project),
+          ),
+        ),
+      },
+      { validators: this.endDateAfterStartDateValidator() },
+    );
+  }
+
+  private createWorkProjectForm(value?: WorkProject): WorkProjectForm {
+    return new FormGroup({
+      projectName: this.createTextControl([Validators.required], value?.projectName),
+      projectDescription: this.createTextControl(
+        [Validators.required, Validators.minLength(20)],
+        value?.projectDescription,
+      ),
+    });
+  }
+
+  private createEducationForm(value?: Education): EducationForm {
+    return new FormGroup(
+      {
+        institution: this.createTextControl([Validators.required], value?.institution),
+        specialization: this.createTextControl([Validators.required], value?.specialization),
+        startDate: new FormControl(this.parseDate(value?.startDate), {
+          validators: Validators.required,
+        }),
+        endDate: new FormControl(this.parseDate(value?.endDate ?? null)),
+      },
+      { validators: this.endDateAfterStartDateValidator() },
+    );
+  }
+
+  private createCourseCertificateForm(value?: CourseCertificate): CourseCertificateForm {
+    return new FormGroup({
+      title: this.createTextControl([Validators.required], value?.title),
+      organization: this.createTextControl([Validators.required], value?.organization),
+      issueDate: new FormControl(this.parseDate(value?.issueDate), {
+        validators: Validators.required,
+      }),
+      certificateUrl: this.createTextControl(
+        [this.optionalUrlValidator()],
+        value?.certificateUrl ?? '',
+      ),
+    });
+  }
+
+  private createLanguageForm(value?: UserLanguage): UserLanguageForm {
+    return new FormGroup({
+      language: this.createTextControl([Validators.required], value?.language),
+      level: new FormControl<UserLanguageLevel | null>(value?.level ?? null, {
+        validators: Validators.required,
+      }),
+    });
+  }
+
+  private endDateAfterStartDateValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const startDate = control.get('startDate')?.value;
+      const endDate = control.get('endDate')?.value;
+
+      if (!(startDate instanceof Date) || !(endDate instanceof Date)) {
+        return null;
+      }
+
+      return endDate.getTime() < startDate.getTime() ? { endDateBeforeStartDate: true } : null;
+    };
+  }
+
+  private optionalUrlValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = String(control.value ?? '').trim();
+
+      if (!value) {
+        return null;
+      }
+
+      try {
+        const url = new URL(value);
+        return url.protocol === 'http:' || url.protocol === 'https:' ? null : { url: true };
+      } catch {
+        return { url: true };
+      }
+    };
+  }
+
+  private toUserProfile(): UserProfile {
+    return {
+      personalInfo: this.personalInfo.getRawValue(),
+      professionalTitle: this.resumeForm.controls.professionalTitle.value,
+      professionalSummary: this.resumeForm.controls.professionalSummary.value,
+      workExperience: this.workExperience.controls.map(experience => ({
+        startDate: this.formatDate(experience.controls.startDate.value),
+        endDate: this.formatNullableDate(experience.controls.endDate.value),
+        companyName: experience.controls.companyName.value,
+        position: experience.controls.position.value,
+        projects: experience.controls.projects.controls.map(project => ({
+          projectName: project.controls.projectName.value,
+          projectDescription: project.controls.projectDescription.value,
+        })),
+      })),
+      education: this.education.controls.map(education => ({
+        institution: education.controls.institution.value,
+        specialization: education.controls.specialization.value,
+        startDate: this.formatDate(education.controls.startDate.value),
+        endDate: this.formatNullableDate(education.controls.endDate.value),
+      })),
+      courses: this.courses.controls.map(course => ({
+        title: course.controls.title.value,
+        organization: course.controls.organization.value,
+        issueDate: this.formatDate(course.controls.issueDate.value),
+        certificateUrl: course.controls.certificateUrl.value.trim() || null,
+      })),
+      languages: this.resumeLanguages.controls.map(language => ({
+        language: language.controls.language.value,
+        level: language.controls.level.value ?? 'beginner',
+      })),
+    };
+  }
+
+  private parseDate(value: string | null | undefined): Date | null {
+    if (!value) {
+      return null;
+    }
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  private formatDate(value: Date | null): string {
+    return value ? this.formatDateParts(value) : '';
+  }
+
+  private formatNullableDate(value: Date | null): string | null {
+    return value ? this.formatDateParts(value) : null;
+  }
+
+  private formatDateParts(value: Date): string {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
   }
 
   protected askAiConsultant(): void {
@@ -386,36 +665,7 @@ export class TailoringResumeComponent {
     }
   }
 
-  private deriveSkills(jobRequirements: string, profile: UserProfile): string[] {
-    const profileKeywords = profile.workExperience.flatMap(experience => [
-      experience.position,
-      ...experience.projects.flatMap(project => [
-        project.projectName,
-        ...this.extractKeywords(project.projectDescription),
-      ]),
-    ]);
-
-    return this.uniqueValues([...this.extractKeywords(jobRequirements), ...profileKeywords])
-      .filter(skill => skill.length > 1)
-      .slice(0, KEYWORD_LIMIT);
-  }
-
-  private extractKeywords(value: string): string[] {
-    const words = value
-      .toLowerCase()
-      .match(/[a-z][a-z0-9+#.-]{2,}/g);
-
-    if (!words) {
-      return [];
-    }
-
-    return this.uniqueValues(words)
-      .filter(word => !STOP_WORDS.has(word))
-      .slice(0, KEYWORD_LIMIT)
-      .map(word => this.formatKeyword(word));
-  }
-
-  private getFullName(profile: UserProfile): string {
+    private getFullName(profile: UserProfile): string {
     const firstName = profile.personalInfo.firstName.trim();
     const lastName = profile.personalInfo.lastName.trim();
     return `${firstName} ${lastName}`.trim() || 'Candidate Name';

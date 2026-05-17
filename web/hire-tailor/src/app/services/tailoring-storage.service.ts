@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { EmployerTailoringRequest } from '../features/new-tailoring/new-tailoring';
+import { EmployerTailoringRequest } from '../models/shared/employer-tailoring-request.model';
 
 export const EMPLOYERS_STORAGE_KEY = 'hiretailor_employers';
 
@@ -9,7 +9,7 @@ export const EMPLOYERS_STORAGE_KEY = 'hiretailor_employers';
 })
 export class TailoringStorageService {
   getEmployers(): EmployerTailoringRequest[] {
-    let storedEmployers: string | null = null;
+    let storedEmployers: string | null;
 
     try {
       storedEmployers = localStorage.getItem(EMPLOYERS_STORAGE_KEY);

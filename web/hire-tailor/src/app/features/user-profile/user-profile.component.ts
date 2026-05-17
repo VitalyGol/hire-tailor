@@ -23,100 +23,24 @@ import { finalize } from 'rxjs';
 
 import { UploadService } from '../../services/upload.service';
 import { StorageService } from '../../services/storage.service';
-
-export interface UserProfile {
-  personalInfo: {
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
-  professionalTitle?: string;
-  professionalSummary?: string;
-  workExperience: WorkExperience[];
-  education: Education[];
-  courses: CourseCertificate[];
-  languages: UserLanguage[];
-}
-
-export interface WorkExperience {
-  startDate: string;
-  endDate?: string | null;
-  companyName: string;
-  position: string;
-  projects: WorkProject[];
-}
-
-export interface WorkProject {
-  projectName: string;
-  projectDescription: string;
-}
-
-export interface Education {
-  institution: string;
-  specialization: string;
-  startDate: string;
-  endDate?: string | null;
-}
-
-export interface CourseCertificate {
-  title: string;
-  organization: string;
-  issueDate: string;
-  certificateUrl?: string | null;
-}
-
-export interface UserLanguage {
-  language: string;
-  level: UserLanguageLevel;
-}
-
-type UserLanguageLevel = 'beginner' | 'intermediate' | 'advanced' | 'fluent' | 'native';
-
-type PersonalInfoForm = FormGroup<{
-  firstName: FormControl<string>;
-  lastName: FormControl<string>;
-  email: FormControl<string>;
-}>;
-
-type WorkProjectForm = FormGroup<{
-  projectName: FormControl<string>;
-  projectDescription: FormControl<string>;
-}>;
-
-type WorkExperienceForm = FormGroup<{
-  startDate: FormControl<Date | null>;
-  endDate: FormControl<Date | null>;
-  companyName: FormControl<string>;
-  position: FormControl<string>;
-  projects: FormArray<WorkProjectForm>;
-}>;
-
-type EducationForm = FormGroup<{
-  institution: FormControl<string>;
-  specialization: FormControl<string>;
-  startDate: FormControl<Date | null>;
-  endDate: FormControl<Date | null>;
-}>;
-
-type CourseCertificateForm = FormGroup<{
-  title: FormControl<string>;
-  organization: FormControl<string>;
-  issueDate: FormControl<Date | null>;
-  certificateUrl: FormControl<string>;
-}>;
-
-type UserLanguageForm = FormGroup<{
-  language: FormControl<string>;
-  level: FormControl<UserLanguageLevel | null>;
-}>;
-
-type UserProfileForm = FormGroup<{
-  personalInfo: PersonalInfoForm;
-  workExperience: FormArray<WorkExperienceForm>;
-  education: FormArray<EducationForm>;
-  courses: FormArray<CourseCertificateForm>;
-  languages: FormArray<UserLanguageForm>;
-}>;
+import {
+  CourseCertificate,
+  Education,
+  UserLanguage,
+  UserLanguageLevel,
+  UserProfile,
+  WorkExperience,
+  WorkProject,
+} from '../../models/shared/user-profile.model';
+import {
+  CourseCertificateForm,
+  EducationForm,
+  PersonalInfoForm,
+  UserLanguageForm,
+  UserProfileForm,
+  WorkExperienceForm,
+  WorkProjectForm,
+} from '../../models/user-profile/user-profile-form.model';
 
 const STORAGE_KEY = 'hiretailor_user_profile';
 const MAX_RESUME_FILE_SIZE_BYTES = 5 * 1024 * 1024;

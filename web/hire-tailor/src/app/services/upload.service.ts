@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../environments/environment';
-import { UserProfile } from '../features/user-profile/user-profile.component';
+import { UserProfile } from '../models/shared/user-profile.model';
 
 @Injectable({
   providedIn: 'root',
