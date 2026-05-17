@@ -66,6 +66,8 @@ class UserProfile(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     personalInfo: PersonalInfo
+    professionalTitle: Optional[str] = None
+    professionalSummary: Optional[str] = None
     workExperience: List[WorkExperience]
     education: List[Education]
     courses: List[CourseCertificate]

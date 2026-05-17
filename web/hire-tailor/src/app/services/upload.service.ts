@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../environments/environment';
-import { UserProfile } from '../features/user-profile/user-profile.component';
+import { UserProfile } from '../models/shared/user-profile.model';
 
 @Injectable({
   providedIn: 'root',
@@ -18,5 +18,18 @@ export class UploadService {
     formData.append('file', file, file.name);
 
     return this.httpClient.post<UserProfile>(this.uploadUrl, formData);
+  }
+
+  generateResume(
+    userProfile: UserProfile,
+    jobRequirements: string,
+    language: string,
+  ): Observable<UserProfile> {
+    const generateUrl = `${environment.apiUrl}/resume/generate`;
+    return this.httpClient.post<UserProfile>(generateUrl, {
+      resume: userProfile,
+      job_requirement: jobRequirements,
+      language,
+    });
   }
 }

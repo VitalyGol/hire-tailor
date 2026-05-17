@@ -1,0 +1,526 @@
+<section class="resume-page">
+  @if (offer(); as offer) {
+    <header class="page-header">
+      <div class="title-block">
+        <p class="label">Job Position</p>
+        <h1>{{ offer.jobPosition }}</h1>
+        <p class="company">
+          <span>Company</span>
+          {{ offer.employerName }}
+        </p>
+      </div>
+
+      @if (offer.isArchived) {
+        <mat-chip-set aria-label="Offer status">
+          <mat-chip class="status-chip">
+            <mat-icon matChipAvatar>archive</mat-icon>
+            This offer is marked as not relevant
+          </mat-chip>
+        </mat-chip-set>
+      }
+    </header>
+
+    <div class="content-grid">
+      <main class="main-column">
+        <mat-card class="resume-card">
+          <mat-card-header>
+            <mat-card-title>Generated Resume</mat-card-title>
+            <mat-card-subtitle>Mock preview based on local profile and job data</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <form class="resume-form" [formGroup]="resumeForm" (ngSubmit)="saveResumeForm()">
+              <section class="form-section" formGroupName="personalInfo">
+                <h2>Personal Information</h2>
+                <div class="form-grid three-columns">
+                  <mat-form-field appearance="outline">
+                    <mat-label>First name</mat-label>
+                    <input matInput formControlName="firstName" autocomplete="given-name" />
+                    @if (hasControlError(personalInfo.controls.firstName, 'required')) {
+                      <mat-error>First name is required.</mat-error>
+                    } @else if (hasControlError(personalInfo.controls.firstName, 'minlength')) {
+                      <mat-error>First name must be at least 2 characters.</mat-error>
+                    }
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Last name</mat-label>
+                    <input matInput formControlName="lastName" autocomplete="family-name" />
+                    @if (hasControlError(personalInfo.controls.lastName, 'required')) {
+                      <mat-error>Last name is required.</mat-error>
+                    } @else if (hasControlError(personalInfo.controls.lastName, 'minlength')) {
+                      <mat-error>Last name must be at least 2 characters.</mat-error>
+                    }
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Email</mat-label>
+                    <input matInput formControlName="email" type="email" autocomplete="email" />
+                    @if (hasControlError(personalInfo.controls.email, 'required')) {
+                      <mat-error>Email is required.</mat-error>
+                    } @else if (hasControlError(personalInfo.controls.email, 'email')) {
+                      <mat-error>Enter a valid email address.</mat-error>
+                    }
+                  </mat-form-field>
+                </div>
+              </section>
+
+              <section class="form-section">
+                <h2>Professional Summary</h2>
+                <div class="form-grid">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Professional title</mat-label>
+                    <input matInput formControlName="professionalTitle" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Professional summary</mat-label>
+                    <textarea matInput formControlName="professionalSummary" rows="4"></textarea>
+                  </mat-form-field>
+                </div>
+              </section>
+
+              <section class="form-section" formArrayName="workExperience">
+                <div class="section-header">
+                  <h2>Work Experience</h2>
+                  <button mat-stroked-button type="button" (click)="addExperience()">
+                    <mat-icon>add</mat-icon>
+                    Add Experience
+                  </button>
+                </div>
+
+                <mat-accordion multi>
+                  @for (
+                    experience of workExperience.controls;
+                    track experience;
+                    let experienceIndex = $index
+                  ) {
+                    <mat-expansion-panel [formGroupName]="experienceIndex" expanded>
+                      <mat-expansion-panel-header>
+                        <mat-panel-title>
+                          {{ experience.controls.companyName.value || 'New experience' }}
+                        </mat-panel-title>
+                        <mat-panel-description>
+                          {{ experience.controls.position.value || 'Position' }}
+                        </mat-panel-description>
+                      </mat-expansion-panel-header>
+
+                      <div class="form-grid two-columns">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Start date</mat-label>
+                          <input
+                            matInput
+                            [matDatepicker]="experienceStartPicker"
+                            formControlName="startDate"
+                          />
+                          <mat-datepicker-toggle matIconSuffix [for]="experienceStartPicker" />
+                          <mat-datepicker #experienceStartPicker />
+                          @if (hasControlError(experience.controls.startDate, 'required')) {
+                            <mat-error>Start date is required.</mat-error>
+                          }
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                          <mat-label>End date</mat-label>
+                          <input
+                            matInput
+                            [matDatepicker]="experienceEndPicker"
+                            formControlName="endDate"
+                          />
+                          <mat-datepicker-toggle matIconSuffix [for]="experienceEndPicker" />
+                          <mat-datepicker #experienceEndPicker />
+                          @if (hasDateRangeError(experience)) {
+                            <mat-error>End date cannot be earlier than start date.</mat-error>
+                          }
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                          <mat-label>Company name</mat-label>
+                          <input matInput formControlName="companyName" />
+                          @if (hasControlError(experience.controls.companyName, 'required')) {
+                            <mat-error>Company name is required.</mat-error>
+                          }
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                          <mat-label>Specialization / position</mat-label>
+                          <input matInput formControlName="position" />
+                          @if (hasControlError(experience.controls.position, 'required')) {
+                            <mat-error>Position is required.</mat-error>
+                          }
+                        </mat-form-field>
+                      </div>
+
+                      <div class="nested-section" formArrayName="projects">
+                        <div class="nested-header">
+                          <h3>Projects</h3>
+                          <button
+                            mat-stroked-button
+                            type="button"
+                            (click)="addProject(experienceIndex)"
+                          >
+                            <mat-icon>add</mat-icon>
+                            Add Project
+                          </button>
+                        </div>
+
+                        @for (
+                          project of getExperienceProjects(experienceIndex).controls;
+                          track project;
+                          let projectIndex = $index
+                        ) {
+                          <div class="nested-item" [formGroupName]="projectIndex">
+                            <div class="form-grid project-grid">
+                              <mat-form-field appearance="outline">
+                                <mat-label>Project name</mat-label>
+                                <input matInput formControlName="projectName" />
+                                @if (hasControlError(project.controls.projectName, 'required')) {
+                                  <mat-error>Project name is required.</mat-error>
+                                }
+                              </mat-form-field>
+
+                              <mat-form-field appearance="outline">
+                                <mat-label>Project description</mat-label>
+                                <textarea
+                                  matInput
+                                  formControlName="projectDescription"
+                                  rows="3"
+                                ></textarea>
+                                @if (
+                                  hasControlError(project.controls.projectDescription, 'required')
+                                ) {
+                                  <mat-error>Project description is required.</mat-error>
+                                } @else if (
+                                  hasControlError(project.controls.projectDescription, 'minlength')
+                                ) {
+                                  <mat-error>Description must be at least 20 characters.</mat-error>
+                                }
+                              </mat-form-field>
+                            </div>
+
+                            <button
+                              mat-icon-button
+                              type="button"
+                              aria-label="Remove project"
+                              (click)="removeProject(experienceIndex, projectIndex)"
+                            >
+                              <mat-icon>delete</mat-icon>
+                            </button>
+                          </div>
+                        }
+                      </div>
+
+                      <mat-action-row>
+                        <button
+                          mat-button
+                          type="button"
+                          color="warn"
+                          (click)="removeExperience(experienceIndex)"
+                        >
+                          Remove experience
+                        </button>
+                      </mat-action-row>
+                    </mat-expansion-panel>
+                  }
+                </mat-accordion>
+              </section>
+
+              <section class="form-section" formArrayName="education">
+                <div class="section-header">
+                  <h2>Education</h2>
+                  <button mat-stroked-button type="button" (click)="addEducation()">
+                    <mat-icon>add</mat-icon>
+                    Add Education
+                  </button>
+                </div>
+
+                <mat-accordion multi>
+                  @for (
+                    educationItem of education.controls;
+                    track educationItem;
+                    let educationIndex = $index
+                  ) {
+                    <mat-expansion-panel [formGroupName]="educationIndex" expanded>
+                      <mat-expansion-panel-header>
+                        <mat-panel-title>
+                          {{ educationItem.controls.institution.value || 'New education' }}
+                        </mat-panel-title>
+                      </mat-expansion-panel-header>
+
+                      <div class="form-grid two-columns">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Institution</mat-label>
+                          <input matInput formControlName="institution" />
+                          @if (hasControlError(educationItem.controls.institution, 'required')) {
+                            <mat-error>Institution is required.</mat-error>
+                          }
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                          <mat-label>Specialization</mat-label>
+                          <input matInput formControlName="specialization" />
+                          @if (hasControlError(educationItem.controls.specialization, 'required')) {
+                            <mat-error>Specialization is required.</mat-error>
+                          }
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                          <mat-label>Start date</mat-label>
+                          <input
+                            matInput
+                            [matDatepicker]="educationStartPicker"
+                            formControlName="startDate"
+                          />
+                          <mat-datepicker-toggle matIconSuffix [for]="educationStartPicker" />
+                          <mat-datepicker #educationStartPicker />
+                          @if (hasControlError(educationItem.controls.startDate, 'required')) {
+                            <mat-error>Start date is required.</mat-error>
+                          }
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                          <mat-label>End date</mat-label>
+                          <input
+                            matInput
+                            [matDatepicker]="educationEndPicker"
+                            formControlName="endDate"
+                          />
+                          <mat-datepicker-toggle matIconSuffix [for]="educationEndPicker" />
+                          <mat-datepicker #educationEndPicker />
+                          @if (hasDateRangeError(educationItem)) {
+                            <mat-error>End date cannot be earlier than start date.</mat-error>
+                          }
+                        </mat-form-field>
+                      </div>
+
+                      <mat-action-row>
+                        <button
+                          mat-button
+                          type="button"
+                          color="warn"
+                          (click)="removeEducation(educationIndex)"
+                        >
+                          Remove education
+                        </button>
+                      </mat-action-row>
+                    </mat-expansion-panel>
+                  }
+                </mat-accordion>
+              </section>
+
+              <section class="form-section" formArrayName="courses">
+                <div class="section-header">
+                  <h2>Courses and Certificates</h2>
+                  <button mat-stroked-button type="button" (click)="addCourse()">
+                    <mat-icon>add</mat-icon>
+                    Add Course / Certificate
+                  </button>
+                </div>
+
+                <mat-accordion multi>
+                  @for (course of courses.controls; track course; let courseIndex = $index) {
+                    <mat-expansion-panel [formGroupName]="courseIndex" expanded>
+                      <mat-expansion-panel-header>
+                        <mat-panel-title>
+                          {{ course.controls.title.value || 'New course / certificate' }}
+                        </mat-panel-title>
+                      </mat-expansion-panel-header>
+
+                      <div class="form-grid two-columns">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Title</mat-label>
+                          <input matInput formControlName="title" />
+                          @if (hasControlError(course.controls.title, 'required')) {
+                            <mat-error>Course or certificate title is required.</mat-error>
+                          }
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                          <mat-label>Organization</mat-label>
+                          <input matInput formControlName="organization" />
+                          @if (hasControlError(course.controls.organization, 'required')) {
+                            <mat-error>Organization is required.</mat-error>
+                          }
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                          <mat-label>Issue date</mat-label>
+                          <input
+                            matInput
+                            [matDatepicker]="issueDatePicker"
+                            formControlName="issueDate"
+                          />
+                          <mat-datepicker-toggle matIconSuffix [for]="issueDatePicker" />
+                          <mat-datepicker #issueDatePicker />
+                          @if (hasControlError(course.controls.issueDate, 'required')) {
+                            <mat-error>Issue date is required.</mat-error>
+                          }
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                          <mat-label>Certificate URL</mat-label>
+                          <input matInput formControlName="certificateUrl" type="url" />
+                          @if (hasControlError(course.controls.certificateUrl, 'url')) {
+                            <mat-error>Enter a valid HTTP or HTTPS URL.</mat-error>
+                          }
+                        </mat-form-field>
+                      </div>
+
+                      <mat-action-row>
+                        <button
+                          mat-button
+                          type="button"
+                          color="warn"
+                          (click)="removeCourse(courseIndex)"
+                        >
+                          Remove course / certificate
+                        </button>
+                      </mat-action-row>
+                    </mat-expansion-panel>
+                  }
+                </mat-accordion>
+              </section>
+
+              <section class="form-section" formArrayName="languages">
+                <div class="section-header">
+                  <h2>Languages</h2>
+                  <button mat-stroked-button type="button" (click)="addLanguage()">
+                    <mat-icon>add</mat-icon>
+                    Add Language
+                  </button>
+                </div>
+
+                <div class="language-list">
+                  @for (
+                    language of resumeLanguages.controls;
+                    track language;
+                    let languageIndex = $index
+                  ) {
+                    <div class="language-row" [formGroupName]="languageIndex">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Language</mat-label>
+                        <input matInput formControlName="language" />
+                        @if (hasControlError(language.controls.language, 'required')) {
+                          <mat-error>Language is required.</mat-error>
+                        }
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Level</mat-label>
+                        <mat-select formControlName="level">
+                          @for (level of languageLevels; track level) {
+                            <mat-option [value]="level">{{ level }}</mat-option>
+                          }
+                        </mat-select>
+                        @if (hasControlError(language.controls.level, 'required')) {
+                          <mat-error>Level is required.</mat-error>
+                        }
+                      </mat-form-field>
+
+                      <button
+                        mat-icon-button
+                        type="button"
+                        aria-label="Remove language"
+                        (click)="removeLanguage(languageIndex)"
+                      >
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  }
+                </div>
+              </section>
+
+              <div class="resume-form-actions">
+                <button mat-flat-button type="submit">
+                  <mat-icon>save</mat-icon>
+                  Save Resume Data
+                </button>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+      </main>
+
+      <aside class="side-column">
+        <mat-card class="analysis-card">
+          <mat-card-header>
+            <mat-card-title>Templates</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <form class="template-form">
+              <mat-form-field appearance="outline">
+                <mat-label>Language</mat-label>
+                <mat-select
+                  [value]="selectedLanguage()"
+                  (selectionChange)="changeTemplateLanguage($event)"
+                >
+                  @for (language of languages; track language) {
+                    <mat-option [value]="language">{{ language }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Template</mat-label>
+                <mat-select
+                  [value]="selectedTemplateId()"
+                  (selectionChange)="changeTemplate($event)"
+                >
+                  @for (template of filteredTemplates(); track template.TemplateId) {
+                    <mat-option [value]="template.TemplateId">{{
+                      template.TemplateName
+                    }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </form>
+
+            <div class="template-preview">
+              <img
+                [src]="selectedTemplatePreviewUrl()"
+                [alt]="selectedTemplatePreviewAlt()"
+                (error)="useNoPreviewImage($event)"
+              />
+            </div>
+
+            <button
+              mat-flat-button
+              type="button"
+              class="preview-button"
+              [disabled]="!selectedTemplate()"
+              (click)="openTemplatePreview()"
+            >
+              <mat-icon>visibility</mat-icon>
+              Preview
+            </button>
+          </mat-card-content>
+        </mat-card>
+      </aside>
+    </div>
+
+    <div class="actions sticky-actions">
+      <button mat-stroked-button type="button" (click)="backToTailoringDetails()">
+        <mat-icon>arrow_back</mat-icon>
+        Back to Tailoring Details
+      </button>
+      <button mat-stroked-button type="button" (click)="regenerateResume()">
+        <mat-icon>autorenew</mat-icon>
+        Regenerate Resume
+      </button>
+      <button mat-flat-button type="button" (click)="downloadResume()">
+        <mat-icon>download</mat-icon>
+        Download Resume
+      </button>
+    </div>
+  } @else {
+    <mat-card class="empty-card">
+      <mat-card-content>
+        <mat-icon>search_off</mat-icon>
+        <h1>Offer was not found</h1>
+        <button mat-flat-button type="button" (click)="backToNewTailoring()">
+          <mat-icon>arrow_back</mat-icon>
+          Back to New Tailoring
+        </button>
+      </mat-card-content>
+    </mat-card>
+  }
+</section>

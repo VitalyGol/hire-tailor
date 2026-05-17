@@ -22,101 +22,26 @@ import { provideNativeDateAdapter } from '@angular/material/core';
 import { finalize } from 'rxjs';
 
 import { UploadService } from '../../services/upload.service';
-import { StorageService } from '../../services/storage.service';
+import { TailoringStorageService } from '../../services/tailoring-storage.service';
+import {
+  CourseCertificate,
+  Education,
+  UserLanguage,
+  UserLanguageLevel,
+  UserProfile,
+  WorkExperience,
+  WorkProject,
+} from '../../models/shared/user-profile.model';
+import {
+  CourseCertificateForm,
+  EducationForm,
+  PersonalInfoForm,
+  UserLanguageForm,
+  UserProfileForm,
+  WorkExperienceForm,
+  WorkProjectForm,
+} from '../../models/user-profile/user-profile-form.model';
 
-export interface UserProfile {
-  personalInfo: {
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
-  workExperience: WorkExperience[];
-  education: Education[];
-  courses: CourseCertificate[];
-  languages: UserLanguage[];
-}
-
-export interface WorkExperience {
-  startDate: string;
-  endDate?: string | null;
-  companyName: string;
-  position: string;
-  projects: WorkProject[];
-}
-
-export interface WorkProject {
-  projectName: string;
-  projectDescription: string;
-}
-
-export interface Education {
-  institution: string;
-  specialization: string;
-  startDate: string;
-  endDate?: string | null;
-}
-
-export interface CourseCertificate {
-  title: string;
-  organization: string;
-  issueDate: string;
-  certificateUrl?: string | null;
-}
-
-export interface UserLanguage {
-  language: string;
-  level: UserLanguageLevel;
-}
-
-type UserLanguageLevel = 'Beginner' | 'Intermediate' | 'Advanced' | 'Fluent' | 'Native';
-
-type PersonalInfoForm = FormGroup<{
-  firstName: FormControl<string>;
-  lastName: FormControl<string>;
-  email: FormControl<string>;
-}>;
-
-type WorkProjectForm = FormGroup<{
-  projectName: FormControl<string>;
-  projectDescription: FormControl<string>;
-}>;
-
-type WorkExperienceForm = FormGroup<{
-  startDate: FormControl<Date | null>;
-  endDate: FormControl<Date | null>;
-  companyName: FormControl<string>;
-  position: FormControl<string>;
-  projects: FormArray<WorkProjectForm>;
-}>;
-
-type EducationForm = FormGroup<{
-  institution: FormControl<string>;
-  specialization: FormControl<string>;
-  startDate: FormControl<Date | null>;
-  endDate: FormControl<Date | null>;
-}>;
-
-type CourseCertificateForm = FormGroup<{
-  title: FormControl<string>;
-  organization: FormControl<string>;
-  issueDate: FormControl<Date | null>;
-  certificateUrl: FormControl<string>;
-}>;
-
-type UserLanguageForm = FormGroup<{
-  language: FormControl<string>;
-  level: FormControl<UserLanguageLevel | null>;
-}>;
-
-type UserProfileForm = FormGroup<{
-  personalInfo: PersonalInfoForm;
-  workExperience: FormArray<WorkExperienceForm>;
-  education: FormArray<EducationForm>;
-  courses: FormArray<CourseCertificateForm>;
-  languages: FormArray<UserLanguageForm>;
-}>;
-
-const STORAGE_KEY = 'hiretailor_user_profile';
 const MAX_RESUME_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
 @Component({
@@ -140,14 +65,14 @@ const MAX_RESUME_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 export class UserProfileComponent {
   private readonly snackBar = inject(MatSnackBar);
   private readonly uploadService = inject(UploadService);
-  private readonly storage = inject(StorageService);
+  private readonly tailoringStorage = inject(TailoringStorageService);
 
   protected readonly languageLevels: readonly UserLanguageLevel[] = [
-    'Beginner',
-    'Intermediate',
-    'Advanced',
-    'Fluent',
-    'Native',
+    'beginner',
+    'intermediate',
+    'advanced',
+    'fluent',
+    'native',
   ];
 
   protected readonly selectedResumeFileName = signal<string | null>(null);
@@ -242,10 +167,13 @@ export class UserProfileComponent {
       });
       return;
     }
-    
-    this.storage.setItem(STORAGE_KEY, JSON.stringify(this.toUserProfile()));
 
-    this.snackBar.open('Profile saved successfully.', 'Close', { duration: 3000 });
+    if (this.tailoringStorage.saveUserProfile(this.toUserProfile())) {
+      this.snackBar.open('Profile saved successfully.', 'Close', { duration: 3000 });
+      return;
+    }
+
+    this.snackBar.open('Profile could not be saved.', 'Close', { duration: 4000 });
   }
 
   protected onResumeFileSelected(event: Event): void {
@@ -414,22 +342,10 @@ export class UserProfileComponent {
   }
 
   private loadProfileFromStorage(): void {
-    const rawProfile = this.storage.getItem(STORAGE_KEY);
+    const profile = this.tailoringStorage.getUserProfile();
 
-    if (!rawProfile) {
-      return;
-    }
-
-    try {
-      const parsedProfile: unknown = JSON.parse(rawProfile);
-
-      if (!this.isUserProfile(parsedProfile)) {
-        return;
-      }
-
-      this.loadProfileFromResume(parsedProfile);
-    } catch {
-      this.snackBar.open('Saved profile data could not be loaded.', 'Close', { duration: 4000 });
+    if (profile) {
+      this.loadProfileFromResume(profile);
     }
   }
 
@@ -483,7 +399,7 @@ export class UserProfileComponent {
       })),
       languages: this.languages.controls.map(language => ({
         language: language.controls.language.value,
-        level: language.controls.level.value ?? 'Beginner',
+        level: language.controls.level.value ?? 'beginner',
       })),
     };
   }
@@ -516,27 +432,5 @@ export class UserProfileComponent {
   private clearResumeInput(input: HTMLInputElement): void {
     input.value = '';
     this.selectedResumeFileName.set(null);
-  }
-
-  private isUserProfile(value: unknown): value is UserProfile {
-    if (!this.isRecord(value) || !this.isRecord(value['personalInfo'])) {
-      return false;
-    }
-
-    const personalInfo = value['personalInfo'];
-
-    return (
-      typeof personalInfo['firstName'] === 'string' &&
-      typeof personalInfo['lastName'] === 'string' &&
-      typeof personalInfo['email'] === 'string' &&
-      Array.isArray(value['workExperience']) &&
-      Array.isArray(value['education']) &&
-      Array.isArray(value['courses']) &&
-      Array.isArray(value['languages'])
-    );
-  }
-
-  private isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null;
   }
 }

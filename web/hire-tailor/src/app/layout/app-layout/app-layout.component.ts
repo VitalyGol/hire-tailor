@@ -9,14 +9,9 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { map } from 'rxjs';
-import { EmployerTailoringRequest } from '../../features/new-tailoring/new-tailoring';
+import { NavigationItem } from '../../models/app-layout/navigation-item.model';
+import { EmployerTailoringRequest } from '../../models/shared/employer-tailoring-request.model';
 import { PageCommunicationService } from '../../services/page-communication.service';
-
-interface NavigationItem {
-  readonly label: string;
-  readonly icon: string;
-  readonly route: string;
-}
 
 const EMPLOYERS_STORAGE_KEY = 'hiretailor_employers';
 
@@ -53,7 +48,7 @@ export class AppLayoutComponent {
     },
   ];
 
-  protected readonly employerList: EmployerTailoringRequest[] = []
+  protected readonly employerList: EmployerTailoringRequest[] = [];
 
   constructor() {
     this.loadEmployersFromStorage();
@@ -90,7 +85,7 @@ export class AppLayoutComponent {
     if (storedEmployers) {
       try {
         const parsedEmployers: EmployerTailoringRequest[] = JSON.parse(storedEmployers);
-        this.employerList.length = 0; 
+        this.employerList.length = 0;
         this.employerList.push(...parsedEmployers.filter(emp => !emp.isArchived));
       } catch (error) {
         console.error('Failed to parse employers from storage:', error);
