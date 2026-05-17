@@ -42,7 +42,44 @@
             <mat-card-title>Templates</mat-card-title>
           </mat-card-header>
           <mat-card-content>
-            
+            <form class="template-form">
+              <mat-form-field appearance="outline">
+                <mat-label>Language</mat-label>
+                <mat-select [value]="selectedLanguage()" (selectionChange)="changeTemplateLanguage($event)">
+                  @for (language of languages; track language) {
+                    <mat-option [value]="language">{{ language }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Template</mat-label>
+                <mat-select [value]="selectedTemplateId()" (selectionChange)="changeTemplate($event)">
+                  @for (template of filteredTemplates(); track template.TemplateId) {
+                    <mat-option [value]="template.TemplateId">{{ template.TemplateName }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </form>
+
+            <div class="template-preview">
+              <img
+                [src]="selectedTemplatePreviewUrl()"
+                [alt]="selectedTemplatePreviewAlt()"
+                (error)="useNoPreviewImage($event)"
+              />
+            </div>
+
+            <button
+              mat-flat-button
+              type="button"
+              class="preview-button"
+              [disabled]="!selectedTemplate()"
+              (click)="openTemplatePreview()"
+            >
+              <mat-icon>visibility</mat-icon>
+              Preview
+            </button>
           </mat-card-content>
         </mat-card>
       </aside>
