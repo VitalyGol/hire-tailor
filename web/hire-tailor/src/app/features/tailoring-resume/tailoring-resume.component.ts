@@ -17,11 +17,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatDividerModule } from '@angular/material/divider';
-import {
-  MAT_DIALOG_DATA,
-  MatDialog,
-  MatDialogModule,
-} from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -58,7 +54,6 @@ import {
 import { TailoringStorageService } from '../../services/tailoring-storage.service';
 import { UploadService } from '../../services/upload.service';
 
-const USER_PROFILE_STORAGE_KEY = 'hiretailor_user_profile';
 const NO_PREVIEW_IMAGE =
   'data:image/svg+xml;charset=UTF-8,' +
   encodeURIComponent(`
@@ -182,7 +177,7 @@ export class TemplatePreviewDialogComponent {
     MatProgressBarModule,
     MatSelectModule,
     MatSnackBarModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   providers: [provideNativeDateAdapter()],
   templateUrl: './tailoring-resume.component.html',
@@ -219,7 +214,9 @@ export class TailoringResumeComponent {
   );
   protected readonly offer = signal<EmployerTailoringRequest | null>(null);
   protected readonly requestedId = signal<string | null>(null);
-  protected readonly userProfile = signal<UserProfile | null>(this.loadUserProfileFromStorage());
+  protected readonly userProfile = signal<UserProfile | null>(
+    this.tailoringStorage.getUserProfile(),
+  );
 
   protected readonly resumeForm: ResumeForm = this.createResumeForm(this.userProfile());
 
@@ -241,7 +238,9 @@ export class TailoringResumeComponent {
     return template ? `templates/${template.TemplateId}.png` : NO_PREVIEW_IMAGE;
   });
 
-  protected readonly selectedTemplatePreviewAlt = computed(() => this.selectedTemplate()?.TemplateName ?? 'No preview');
+  protected readonly selectedTemplatePreviewAlt = computed(
+    () => this.selectedTemplate()?.TemplateName ?? 'No preview',
+  );
 
   protected readonly generatedResume = computed<GeneratedResumePreview | null>(() => {
     const currentOffer = this.offer();
@@ -277,6 +276,19 @@ export class TailoringResumeComponent {
       )
       .subscribe(id => {
         this.requestedId.set(id);
+        let offer = id ? this.tailoringStorage.findEmployerById(id) : null;
+        if (offer && !offer.userProfile) {
+          const profile = this.tailoringStorage.getUserProfile();
+          if (profile) {
+            offer = {
+              ...offer,
+              userProfile: profile,
+              templateId: offer.templateId ?? this.selectedTemplate()?.TemplateId,
+              language: offer.language ?? this.selectedTemplate()?.Language,
+            };
+          }
+          this.tailoringStorage.saveEmployer({ ...offer, id: offer.id });
+        }
         this.offer.set(id ? this.tailoringStorage.findEmployerById(id) : null);
       });
   }
@@ -357,12 +369,12 @@ export class TailoringResumeComponent {
     const profile = this.toUserProfile();
     this.userProfile.set(profile);
 
-    try {
-      localStorage.setItem(USER_PROFILE_STORAGE_KEY, JSON.stringify(profile));
+    if (this.tailoringStorage.saveUserProfile(profile)) {
       this.snackBar.open('Resume data saved successfully.', 'Close', { duration: 3000 });
-    } catch {
-      this.snackBar.open('Resume data could not be saved.', 'Close', { duration: 4000 });
+      return;
     }
+
+    this.snackBar.open('Resume data could not be saved.', 'Close', { duration: 4000 });
   }
 
   protected hasControlError(control: AbstractControl, errorCode: string): boolean {
@@ -417,19 +429,27 @@ export class TailoringResumeComponent {
   }
 
   protected regenerateResume(): void {
-    this.uploadService.generateResume(
-      this.userProfile()!,
-      this.offer()?.jobRequirements ?? '',
-      this.selectedTemplate()?.Language,
-    ).subscribe({
-      next: () => {
-        this.snackBar.open('Resume regenerated successfully', 'Close', { duration: 3000 });
-      },
-      error: () => {
-        this.snackBar.open('Failed to regenerate resume. Please try again later.', 'Close', { duration: 3000 });
-      },
-    });
-    this.snackBar.open('Resume regeneration will be available soon', 'Close', { duration: 3000 });
+    this.uploadService
+      .generateResume(
+        this.userProfile()!,
+        this.offer()?.jobRequirements ?? '',
+        this.selectedTemplate()?.Language,
+      )
+      .subscribe({
+        next: response => {
+          this.userProfile.set({ ...this.userProfile(), ...response });
+          this.resumeForm.patchValue(this.createResumeForm(this.userProfile()).getRawValue());
+          this.resumeForm.markAsDirty();
+          this.resumeForm.updateValueAndValidity();
+
+          this.snackBar.open('Resume regenerated successfully', 'Close', { duration: 3000 });
+        },
+        error: () => {
+          this.snackBar.open('Failed to regenerate resume. Please try again later.', 'Close', {
+            duration: 3000,
+          });
+        },
+      });
   }
 
   private createResumeForm(profile: UserProfile | null): ResumeForm {
@@ -443,7 +463,10 @@ export class TailoringResumeComponent {
           [Validators.required, Validators.minLength(2)],
           profile?.personalInfo.lastName,
         ),
-        email: this.createTextControl([Validators.required, Validators.email], profile?.personalInfo.email),
+        email: this.createTextControl(
+          [Validators.required, Validators.email],
+          profile?.personalInfo.email,
+        ),
       }),
       professionalTitle: this.createTextControl([], profile?.professionalTitle),
       professionalSummary: this.createTextControl([], profile?.professionalSummary),
@@ -642,39 +665,13 @@ export class TailoringResumeComponent {
     void this.router.navigate(['/new-tailoring']);
   }
 
-  private loadUserProfileFromStorage(): UserProfile | null {
-    let rawProfile: string | null;
-
-    try {
-      rawProfile = localStorage.getItem(USER_PROFILE_STORAGE_KEY);
-    } catch (error) {
-      console.error('Failed to read user profile from storage:', error);
-      return null;
-    }
-
-    if (!rawProfile) {
-      return null;
-    }
-
-    try {
-      const parsedProfile: unknown = JSON.parse(rawProfile);
-      return this.isUserProfile(parsedProfile) ? parsedProfile : null;
-    } catch (error) {
-      console.error('Failed to parse user profile from storage:', error);
-      return null;
-    }
-  }
-
-    private getFullName(profile: UserProfile): string {
+  private getFullName(profile: UserProfile): string {
     const firstName = profile.personalInfo.firstName.trim();
     const lastName = profile.personalInfo.lastName.trim();
     return `${firstName} ${lastName}`.trim() || 'Candidate Name';
   }
 
-  private getProfessionalTitle(
-    profile: UserProfile,
-    offer: EmployerTailoringRequest,
-  ): string {
+  private getProfessionalTitle(profile: UserProfile, offer: EmployerTailoringRequest): string {
     const professionalTitle = profile.professionalTitle?.trim();
     return professionalTitle || offer.jobPosition;
   }
@@ -717,104 +714,5 @@ export class TailoringResumeComponent {
       .split(/([+#.-])/)
       .map(part => (part.match(/^[a-z]/) ? `${part[0].toUpperCase()}${part.slice(1)}` : part))
       .join('');
-  }
-
-  private isUserProfile(value: unknown): value is UserProfile {
-    if (!this.isRecord(value) || !this.isRecord(value['personalInfo'])) {
-      return false;
-    }
-
-    const personalInfo = value['personalInfo'];
-
-    return (
-      typeof personalInfo['firstName'] === 'string' &&
-      typeof personalInfo['lastName'] === 'string' &&
-      typeof personalInfo['email'] === 'string' &&
-      (value['professionalTitle'] === undefined ||
-        typeof value['professionalTitle'] === 'string') &&
-      (value['professionalSummary'] === undefined ||
-        typeof value['professionalSummary'] === 'string') &&
-      this.isWorkExperienceArray(value['workExperience']) &&
-      this.isEducationArray(value['education']) &&
-      this.isCourseArray(value['courses']) &&
-      this.isLanguageArray(value['languages'])
-    );
-  }
-
-  private isWorkExperienceArray(value: unknown): value is WorkExperience[] {
-    return Array.isArray(value) && value.every(item => this.isWorkExperience(item));
-  }
-
-  private isWorkExperience(value: unknown): value is WorkExperience {
-    return (
-      this.isRecord(value) &&
-      typeof value['startDate'] === 'string' &&
-      (value['endDate'] === undefined ||
-        value['endDate'] === null ||
-        typeof value['endDate'] === 'string') &&
-      typeof value['companyName'] === 'string' &&
-      typeof value['position'] === 'string' &&
-      this.isProjectArray(value['projects'])
-    );
-  }
-
-  private isProjectArray(value: unknown): value is WorkProject[] {
-    return Array.isArray(value) && value.every(item => this.isProject(item));
-  }
-
-  private isProject(value: unknown): value is WorkProject {
-    return (
-      this.isRecord(value) &&
-      typeof value['projectName'] === 'string' &&
-      typeof value['projectDescription'] === 'string'
-    );
-  }
-
-  private isEducationArray(value: unknown): value is Education[] {
-    return Array.isArray(value) && value.every(item => this.isEducation(item));
-  }
-
-  private isEducation(value: unknown): value is Education {
-    return (
-      this.isRecord(value) &&
-      typeof value['institution'] === 'string' &&
-      typeof value['specialization'] === 'string' &&
-      typeof value['startDate'] === 'string' &&
-      (value['endDate'] === undefined ||
-        value['endDate'] === null ||
-        typeof value['endDate'] === 'string')
-    );
-  }
-
-  private isCourseArray(value: unknown): value is CourseCertificate[] {
-    return Array.isArray(value) && value.every(item => this.isCourse(item));
-  }
-
-  private isCourse(value: unknown): value is CourseCertificate {
-    return (
-      this.isRecord(value) &&
-      typeof value['title'] === 'string' &&
-      typeof value['organization'] === 'string' &&
-      typeof value['issueDate'] === 'string' &&
-      (value['certificateUrl'] === undefined ||
-        value['certificateUrl'] === null ||
-        typeof value['certificateUrl'] === 'string')
-    );
-  }
-
-  private isLanguageArray(value: unknown): value is UserLanguage[] {
-    return Array.isArray(value) && value.every(item => this.isLanguage(item));
-  }
-
-  private isLanguage(value: unknown): value is UserLanguage {
-    return (
-      this.isRecord(value) &&
-      typeof value['language'] === 'string' &&
-      typeof value['level'] === 'string'
-    );
-  }
-
-  private isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null;
   }
 }

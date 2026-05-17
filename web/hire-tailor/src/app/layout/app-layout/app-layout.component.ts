@@ -48,7 +48,7 @@ export class AppLayoutComponent {
     },
   ];
 
-  protected readonly employerList: EmployerTailoringRequest[] = []
+  protected readonly employerList: EmployerTailoringRequest[] = [];
 
   constructor() {
     this.loadEmployersFromStorage();
@@ -85,7 +85,7 @@ export class AppLayoutComponent {
     if (storedEmployers) {
       try {
         const parsedEmployers: EmployerTailoringRequest[] = JSON.parse(storedEmployers);
-        this.employerList.length = 0; 
+        this.employerList.length = 0;
         this.employerList.push(...parsedEmployers.filter(emp => !emp.isArchived));
       } catch (error) {
         console.error('Failed to parse employers from storage:', error);

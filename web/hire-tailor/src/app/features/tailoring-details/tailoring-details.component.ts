@@ -13,13 +13,7 @@ import { TailoringStorageService } from '../../services/tailoring-storage.servic
 
 @Component({
   selector: 'app-tailoring-details',
-  imports: [
-    MatButtonModule,
-    MatCardModule,
-    MatChipsModule,
-    MatIconModule,
-    MatSnackBarModule,
-  ],
+  imports: [MatButtonModule, MatCardModule, MatChipsModule, MatIconModule, MatSnackBarModule],
   templateUrl: './tailoring-details.component.html',
   styleUrl: './tailoring-details.component.scss',
 })

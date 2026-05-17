@@ -12,7 +12,8 @@ export interface PageCommunicationMessage<T = unknown> {
 export class PageCommunicationService {
   private readonly messageSubject = new BehaviorSubject<PageCommunicationMessage | null>(null);
 
-  readonly message$: Observable<PageCommunicationMessage | null> = this.messageSubject.asObservable();
+  readonly message$: Observable<PageCommunicationMessage | null> =
+    this.messageSubject.asObservable();
 
   sendMessage<T>(key: string, payload: T): void {
     this.messageSubject.next({ key, payload });

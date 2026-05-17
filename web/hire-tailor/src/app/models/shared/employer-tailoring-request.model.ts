@@ -1,3 +1,5 @@
+import { UserProfile } from './user-profile.model';
+
 export interface EmployerTailoringRequest {
   id: string;
   employerName: string;
@@ -5,4 +7,7 @@ export interface EmployerTailoringRequest {
   jobRequirements: string;
   createdAt: string;
   isArchived?: boolean;
+  userProfile?: UserProfile;
+  templateId?: string;
+  language?: string;
 }

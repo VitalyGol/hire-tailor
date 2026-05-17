@@ -20,8 +20,16 @@ export class UploadService {
     return this.httpClient.post<UserProfile>(this.uploadUrl, formData);
   }
 
-  generateResume(userProfile: UserProfile, jobRequirements: string, language: string): Observable<UserProfile> {
+  generateResume(
+    userProfile: UserProfile,
+    jobRequirements: string,
+    language: string,
+  ): Observable<UserProfile> {
     const generateUrl = `${environment.apiUrl}/resume/generate`;
-    return this.httpClient.post<UserProfile>(generateUrl, { resume: userProfile, job_requirement:jobRequirements, language });
+    return this.httpClient.post<UserProfile>(generateUrl, {
+      resume: userProfile,
+      job_requirement: jobRequirements,
+      language,
+    });
   }
 }

@@ -1,8 +1,6 @@
 import { FormArray, FormControl, FormGroup } from '@angular/forms';
 
-import {
-  UserLanguageLevel,
-} from '../shared/user-profile.model';
+import { UserLanguageLevel } from '../shared/user-profile.model';
 
 export type PersonalInfoForm = FormGroup<{
   firstName: FormControl<string>;

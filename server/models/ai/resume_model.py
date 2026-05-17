@@ -7,8 +7,8 @@ from models.ai.extract_models import CourseCertificate, Education, UserLanguage,
 class ResumeModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    professional_title: str
-    professional_summary: str
+    professionalTitle: str
+    professionalSummary: str
     workExperience: List[WorkExperience]
     education: List[Education]
     courses: List[CourseCertificate]

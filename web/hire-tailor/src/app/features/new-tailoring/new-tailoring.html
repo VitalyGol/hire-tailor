@@ -23,7 +23,7 @@
             <mat-error>Employer name must be at least 2 characters.</mat-error>
             }
           </mat-form-field>
-           <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline">
             <mat-label>Job Position</mat-label>
             <input matInput formControlName="jobPosition" autocomplete="organization" />
             @if (hasControlError(jobPosition, 'required')) {
@@ -50,6 +50,4 @@
       <button mat-flat-button type="submit">Save</button>
     </div>
   </form>
-
-  
 </section>

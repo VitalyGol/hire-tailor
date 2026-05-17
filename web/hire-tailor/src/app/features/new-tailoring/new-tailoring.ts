@@ -49,7 +49,6 @@ export class NewTailoring {
     }),
   });
 
-
   protected get employerName(): FormControl<string> {
     return this.tailoringForm.controls.employerName;
   }
@@ -88,7 +87,6 @@ export class NewTailoring {
   }
 
   protected loadEmployersFromStorage(): EmployerTailoringRequest[] {
-    
     const storedEmployers = localStorage.getItem(EMPLOYERS_STORAGE_KEY);
     if (storedEmployers) {
       try {
@@ -104,7 +102,6 @@ export class NewTailoring {
   protected hasControlError(control: AbstractControl, errorCode: string): boolean {
     return control.hasError(errorCode) && (control.touched || control.dirty);
   }
-
 
   private saveEmployersToStorage(employers: readonly EmployerTailoringRequest[]): void {
     try {
