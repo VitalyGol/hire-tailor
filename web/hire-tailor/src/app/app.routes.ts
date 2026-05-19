@@ -2,8 +2,6 @@ import { Routes } from '@angular/router';
 
 import { AppLayoutComponent } from './layout/app-layout/app-layout.component';
 import { PlaceholderPageComponent } from './pages/placeholder-page/placeholder-page.component';
-import { UserProfileComponent } from './features/user-profile/user-profile.component';
-import { NewTailoring } from './features/new-tailoring/new-tailoring';
 
 export const routes: Routes = [
   {
@@ -17,7 +15,10 @@ export const routes: Routes = [
       },
       {
         path: 'new-tailoring',
-        component: NewTailoring,
+        loadComponent: () =>
+          import('./features/new-tailoring/new-tailoring.component').then(
+            m => m.NewTailoringComponent,
+          ),
         data: { title: 'New Tailoring' },
       },
       {
@@ -38,7 +39,8 @@ export const routes: Routes = [
       },
       {
         path: 'history',
-        component: PlaceholderPageComponent,
+        loadComponent: () =>
+          import('./features/history/history.component').then(m => m.HistoryComponent),
         data: { title: 'History' },
       },
       {
@@ -47,13 +49,11 @@ export const routes: Routes = [
         data: { title: 'Templates' },
       },
       {
-        path: 'settings',
-        component: PlaceholderPageComponent,
-        data: { title: 'Settings' },
-      },
-      {
         path: 'user-profile',
-        component: UserProfileComponent,
+        loadComponent: () =>
+          import('./features/user-profile/user-profile.component').then(
+            m => m.UserProfileComponent,
+          ),
         data: { title: 'User Profile' },
       },
     ],
