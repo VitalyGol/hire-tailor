@@ -277,6 +277,7 @@ export class TailoringResumeComponent {
       .subscribe(id => {
         this.requestedId.set(id);
         let offer = id ? this.tailoringStorage.findEmployerById(id) : null;
+        console.log('Loaded tailoring request:', offer);
         if (offer && !offer.userProfile) {
           const profile = this.tailoringStorage.getUserProfile();
           if (profile) {
@@ -290,6 +291,8 @@ export class TailoringResumeComponent {
           this.tailoringStorage.saveEmployer({ ...offer, id: offer.id });
         }
         this.offer.set(id ? this.tailoringStorage.findEmployerById(id) : null);
+        this.userProfile.set(this.offer()!.userProfile ?? this.tailoringStorage.getUserProfile());
+        this.resumeForm.patchValue(this.createResumeForm(this.userProfile()).getRawValue());
       });
   }
 
@@ -365,12 +368,10 @@ export class TailoringResumeComponent {
       });
       return;
     }
-
-    const profile = this.toUserProfile();
-    this.userProfile.set(profile);
-
-    if (this.tailoringStorage.saveUserProfile(profile)) {
+    const offer = this.tailoringStorage.findEmployerById(this.requestedId()!);
+    if (this.tailoringStorage.saveEmployer({ ...offer!, userProfile: this.toUserProfile() })) {
       this.snackBar.open('Resume data saved successfully.', 'Close', { duration: 3000 });
+      this.resumeForm.markAsPristine();
       return;
     }
 
@@ -678,41 +679,5 @@ export class TailoringResumeComponent {
 
   private getProfessionalSummary(profile: UserProfile): string {
     return profile.professionalSummary?.trim() ?? '';
-  }
-
-  private countProjects(workExperience: readonly WorkExperience[]): number {
-    return workExperience.reduce((total, experience) => total + experience.projects.length, 0);
-  }
-
-  private uniqueValues(values: readonly string[]): string[] {
-    const result: string[] = [];
-    const seen = new Set<string>();
-
-    values.forEach(value => {
-      const normalizedValue = value.trim();
-      const key = normalizedValue.toLowerCase();
-
-      if (!normalizedValue || seen.has(key)) {
-        return;
-      }
-
-      seen.add(key);
-      result.push(normalizedValue);
-    });
-
-    return result;
-  }
-
-  private formatKeyword(value: string): string {
-    const knownUppercase = new Set(['ai', 'api', 'aws', 'css', 'html', 'js', 'sql', 'ui', 'ux']);
-
-    if (knownUppercase.has(value)) {
-      return value.toUpperCase();
-    }
-
-    return value
-      .split(/([+#.-])/)
-      .map(part => (part.match(/^[a-z]/) ? `${part[0].toUpperCase()}${part.slice(1)}` : part))
-      .join('');
   }
 }

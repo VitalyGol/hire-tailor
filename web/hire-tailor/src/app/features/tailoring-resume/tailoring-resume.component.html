@@ -428,13 +428,6 @@
                   }
                 </div>
               </section>
-
-              <div class="resume-form-actions">
-                <button mat-flat-button type="submit">
-                  <mat-icon>save</mat-icon>
-                  Save Resume Data
-                </button>
-              </div>
             </form>
           </mat-card-content>
         </mat-card>
@@ -498,6 +491,15 @@
     </div>
 
     <div class="actions sticky-actions">
+      <button
+        mat-flat-button
+        [disabled]="resumeForm.invalid || !resumeForm.dirty"
+        (click)="saveResumeForm()"
+      >
+        <mat-icon>save</mat-icon>
+        Save Resume Data
+      </button>
+      <div class="divider"></div>
       <button mat-stroked-button type="button" (click)="backToTailoringDetails()">
         <mat-icon>arrow_back</mat-icon>
         Back to Tailoring Details
