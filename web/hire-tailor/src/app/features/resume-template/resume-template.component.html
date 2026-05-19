@@ -1,0 +1,116 @@
+@if (resume; as resumeData) {
+  <article class="resume-template" [attr.lang]="language" [attr.dir]="direction">
+    <header class="resume-header">
+      @if (fullName) {
+        <h1>{{ fullName }}</h1>
+      }
+
+      @if (hasText(resumeData.professionalTitle)) {
+        <p class="professional-title">{{ resumeData.professionalTitle }}</p>
+      }
+
+      @if (hasText(resumeData.personalInfo.email)) {
+        <address>
+          <a [href]="'mailto:' + resumeData.personalInfo.email">{{ resumeData.personalInfo.email }}</a>
+        </address>
+      }
+    </header>
+
+    @if (hasText(resumeData.professionalSummary)) {
+      <section class="resume-section" aria-labelledby="resume-summary-heading">
+        <h2 id="resume-summary-heading">{{ labels.professionalSummary }}</h2>
+        <p>{{ resumeData.professionalSummary }}</p>
+      </section>
+    }
+
+    @if (hasItems(resumeData.workExperience)) {
+      <section class="resume-section" aria-labelledby="resume-work-heading">
+        <h2 id="resume-work-heading">{{ labels.workExperience }}</h2>
+
+        @for (experience of resumeData.workExperience; track experience) {
+          <article class="resume-entry">
+            <header>
+              <h3>{{ experience.position }}</h3>
+              <p class="entry-meta">
+                <span>{{ experience.companyName }}</span>
+                <span>{{ formatDateRange(experience.startDate, experience.endDate) }}</span>
+              </p>
+            </header>
+
+            @if (hasItems(experience.projects)) {
+              <ul>
+                @for (project of experience.projects; track project) {
+                  <li>
+                    <strong>{{ project.projectName }}</strong>
+                    @if (hasText(project.projectDescription)) {
+                      <span> — {{ project.projectDescription }}</span>
+                    }
+                  </li>
+                }
+              </ul>
+            }
+          </article>
+        }
+      </section>
+    }
+
+    @if (hasItems(resumeData.education)) {
+      <section class="resume-section" aria-labelledby="resume-education-heading">
+        <h2 id="resume-education-heading">{{ labels.education }}</h2>
+
+        <ul class="plain-list">
+          @for (education of resumeData.education; track education) {
+            <li>
+              <strong>{{ education.institution }}</strong>
+              @if (hasText(education.specialization)) {
+                <span>, {{ education.specialization }}</span>
+              }
+              <span> - {{ formatDateRange(education.startDate, education.endDate) }}</span>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (hasItems(resumeData.courses)) {
+      <section class="resume-section" aria-labelledby="resume-courses-heading">
+        <h2 id="resume-courses-heading">{{ labels.courses }}</h2>
+
+        <ul class="plain-list">
+          @for (course of resumeData.courses; track course) {
+            <li>
+              <strong>{{ course.title }}</strong>
+              @if (hasText(course.organization)) {
+                <span>, {{ course.organization }}</span>
+              }
+              @if (formatSingleDate(course.issueDate)) {
+                <span> - {{ formatSingleDate(course.issueDate) }}</span>
+              }
+              @if (hasText(course.certificateUrl)) {
+                <span> - </span>
+                <a [href]="course.certificateUrl">{{ course.certificateUrl }}</a>
+              }
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (hasItems(resumeData.languages)) {
+      <section class="resume-section" aria-labelledby="resume-languages-heading">
+        <h2 id="resume-languages-heading">{{ labels.languages }}</h2>
+
+        <ul class="plain-list">
+          @for (languageItem of resumeData.languages; track languageItem) {
+            <li>
+              <span>{{ languageItem.language }}</span>
+              @if (hasText(languageItem.level)) {
+                <span> - {{ languageItem.level }}</span>
+              }
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  </article>
+}

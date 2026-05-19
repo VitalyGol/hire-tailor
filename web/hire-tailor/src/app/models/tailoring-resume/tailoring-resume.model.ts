@@ -1,5 +1,6 @@
 import { FormArray, FormControl, FormGroup } from '@angular/forms';
 
+import { AtsResumeData } from '../resume-template/resume.models';
 import {
   CourseCertificate,
   Education,
@@ -16,7 +17,12 @@ export interface ResumeTemplate {
   readonly Language: ResumeTemplateLanguage;
 }
 
-export interface GeneratedResumePreview {
+export interface GeneratedResumePreview extends AtsResumeData {
+  readonly personalInfo: {
+    readonly firstName: string;
+    readonly lastName: string;
+    readonly email: string;
+  };
   readonly fullName: string;
   readonly professionalTitle: string;
   readonly professionalSummary: string;

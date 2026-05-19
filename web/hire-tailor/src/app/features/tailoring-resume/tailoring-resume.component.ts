@@ -1,6 +1,5 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { JsonPipe } from '@angular/common';
 import {
   AbstractControl,
   FormArray,
@@ -38,6 +37,7 @@ import {
   WorkExperience,
   WorkProject,
 } from '../../models/shared/user-profile.model';
+import { AtsResumeLanguage } from '../../models/resume-template/resume.models';
 import {
   CourseCertificateForm,
   EducationForm,
@@ -51,6 +51,7 @@ import {
   WorkExperienceForm,
   WorkProjectForm,
 } from '../../models/tailoring-resume/tailoring-resume.model';
+import { ResumeTemplateComponent } from '../resume-template/resume-template.component';
 import { TailoringStorageService } from '../../services/tailoring-storage.service';
 import { UploadService } from '../../services/upload.service';
 
@@ -68,7 +69,7 @@ const NO_PREVIEW_IMAGE =
 
 @Component({
   selector: 'app-template-preview-dialog',
-  imports: [JsonPipe, MatButtonModule, MatDialogModule, MatIconModule],
+  imports: [MatButtonModule, MatDialogModule, MatIconModule, ResumeTemplateComponent],
   template: `
     <h2 mat-dialog-title>{{ data.template.TemplateName }}</h2>
     <mat-dialog-content class="template-dialog-content">
@@ -76,11 +77,17 @@ const NO_PREVIEW_IMAGE =
         <span>{{ data.template.Language }}</span>
         <span>{{ data.template.TemplateId }}</span>
       </div>
-      <div class="template-render-placeholder">
-        <mat-icon>description</mat-icon>
-        <p>Template preview with resume data will be available soon.</p>
-      </div>
-      <pre>{{ data.resume | json }}</pre>
+
+      @if (data.resume) {
+        <div class="template-preview-frame">
+          <app-resume-template [resume]="data.resume" [language]="templateLanguage" />
+        </div>
+      } @else {
+        <div class="template-render-placeholder">
+          <mat-icon>description</mat-icon>
+          <p>Resume data is not available.</p>
+        </div>
+      }
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-flat-button type="button" mat-dialog-close>Close</button>
@@ -125,6 +132,18 @@ const NO_PREVIEW_IMAGE =
         text-align: center;
       }
 
+      .template-preview-frame {
+        max-height: 70vh;
+        overflow: auto;
+        border: 1px solid #d8dee9;
+        background: #eef1f5;
+        padding: 18px;
+      }
+
+      .template-preview-frame app-resume-template {
+        display: block;
+      }
+
       .template-render-placeholder mat-icon {
         width: 44px;
         height: 44px;
@@ -137,18 +156,6 @@ const NO_PREVIEW_IMAGE =
         font-weight: 700;
       }
 
-      pre {
-        max-height: 220px;
-        margin: 0;
-        overflow: auto;
-        border-radius: 8px;
-        background: #172033;
-        color: #f7f8fa;
-        padding: 14px;
-        font-size: 0.82rem;
-        white-space: pre-wrap;
-      }
-
       @media (max-width: 699px) {
         .template-dialog-content {
           width: auto;
@@ -159,6 +166,10 @@ const NO_PREVIEW_IMAGE =
 })
 export class TemplatePreviewDialogComponent {
   protected readonly data = inject<TemplatePreviewDialogData>(MAT_DIALOG_DATA);
+
+  protected get templateLanguage(): AtsResumeLanguage {
+    return this.data.template.Language === 'Hebrew' ? 'he' : 'en';
+  }
 }
 
 @Component({
@@ -257,6 +268,7 @@ export class TailoringResumeComponent {
       `Resume preview tailored for ${currentOffer.jobPosition} at ${currentOffer.employerName}, aligned with the listed job requirements.`;
 
     return {
+      personalInfo: profile.personalInfo,
       fullName,
       professionalTitle,
       professionalSummary,
