@@ -44,6 +44,14 @@ export const routes: Routes = [
         data: { title: 'History' },
       },
       {
+        path: 'tailoring/:id/ai-consultant',
+        loadComponent: () =>
+          import('./features/ai-consultant/ai-consultant.component').then(
+            m => m.AiConsultantComponent,
+          ),
+        data: { title: 'AI Consultant' },
+      },
+      {
         path: 'templates',
         component: PlaceholderPageComponent,
         data: { title: 'Templates' },

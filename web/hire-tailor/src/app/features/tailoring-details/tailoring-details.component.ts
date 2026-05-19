@@ -86,8 +86,13 @@ export class TailoringDetailsComponent {
   }
 
   protected askAiConsultant(): void {
-    // TODO: Integrate AI consultant chat.
-    this.snackBar.open('AI consultant chat will be available soon', 'Close', { duration: 3000 });
+    const currentOffer = this.offer();
+
+    if (!currentOffer) {
+      return;
+    }
+
+    void this.router.navigate(['/tailoring', currentOffer.id, 'ai-consultant']);
   }
 
   protected backToNewTailoring(): void {
