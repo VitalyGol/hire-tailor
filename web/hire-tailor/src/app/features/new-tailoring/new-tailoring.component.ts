@@ -27,10 +27,10 @@ const EMPLOYERS_STORAGE_KEY = 'hiretailor_employers';
     MatSnackBarModule,
     ReactiveFormsModule,
   ],
-  templateUrl: './new-tailoring.html',
-  styleUrl: './new-tailoring.scss',
+  templateUrl: './new-tailoring.component.html',
+  styleUrl: './new-tailoring.component.scss',
 })
-export class NewTailoring {
+export class NewTailoringComponent {
   private readonly snackBar = inject(MatSnackBar);
   private readonly messageService = inject(PageCommunicationService);
 

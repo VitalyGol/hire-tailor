@@ -40,6 +40,35 @@ export class TailoringStorageService {
     }
   }
 
+  getArchivedEmployers(): EmployerTailoringRequest[] {
+    return this.getEmployers().filter(employer => employer.isArchived);
+  }
+
+  removeEmployer(id: string): boolean {
+    const employers = this.getEmployers();
+    const updatedEmployers = employers.filter(employer => employer.id !== id);
+
+    if (updatedEmployers.length === employers.length) {
+      console.warn(`Employer with id ${id} not found for removal.`);
+      return false;
+    }
+
+    return this.saveEmployers(updatedEmployers);
+  }
+
+  markEmployerAsRelevant(id: string): boolean {
+    const employers = this.getEmployers();
+    const employerIndex = employers.findIndex(employer => employer.id === id);
+
+    if (employerIndex === -1) {
+      console.warn(`Employer with id ${id} not found for marking as relevant.`);
+      return false;
+    }
+
+    employers[employerIndex].isArchived = false;
+    return this.saveEmployers(employers);
+  }
+
   findEmployerById(id: string): EmployerTailoringRequest | null {
     return this.getEmployers().find(employer => employer.id === id) ?? null;
   }
