@@ -46,6 +46,11 @@ export class AppLayoutComponent {
       icon: 'history',
       route: '/history',
     },
+    {
+      label: 'AI Consultant',
+      icon: 'support_agent',
+      route: '/ai-consultant',
+    },
   ];
 
   protected readonly employerList: EmployerTailoringRequest[] = [];

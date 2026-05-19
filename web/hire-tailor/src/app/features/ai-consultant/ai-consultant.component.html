@@ -1,0 +1,70 @@
+<section class="consultant-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Job Position</p>
+      <h1>AI Consultant</h1>
+    </div>
+  </header>
+
+  @if (!isChatActive()) {
+    <mat-card class="empty-state-card">
+      <mat-card-content>
+        <mat-icon aria-hidden="true">support_agent</mat-icon>
+        <h2>AI Consultant</h2>
+        <p>Start a focused consultation and keep the conversation available after refresh.</p>
+        <button mat-flat-button type="button" (click)="startConsultation()">
+          Start consultation
+        </button>
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <mat-card class="chat-card">
+      <mat-card-header>
+        <mat-card-title>Consultation</mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div #messageHistory class="message-history" aria-live="polite">
+          @if (hasMessages()) {
+            @for (message of messages(); track message.id) {
+              <article class="message" [class.assistant-message]="message.role === 'assistant'">
+                <div class="message-meta">
+                  <span>{{ message.role === 'user' ? 'You' : 'AI Consultant' }}</span>
+                  <time [dateTime]="message.createdAt">{{ formatMessageTime(message.createdAt) }}</time>
+                </div>
+                <p>{{ message.text }}</p>
+              </article>
+            }
+          } @else {
+            <div class="chat-placeholder">
+              <mat-icon aria-hidden="true">chat_bubble_outline</mat-icon>
+              <p>Your consultation messages will appear here.</p>
+            </div>
+          }
+        </div>
+
+        <form class="message-form" (ngSubmit)="sendMessage()">
+          <mat-form-field appearance="outline">
+            <mat-label>Message</mat-label>
+            <input
+              matInput
+              type="text"
+              autocomplete="off"
+              [formControl]="messageControl"
+              aria-label="Message"
+            />
+          </mat-form-field>
+
+          <button
+            mat-icon-button
+            type="submit"
+            aria-label="Send message"
+            [disabled]="!messageControl.value.trim()"
+          >
+            <mat-icon>send</mat-icon>
+          </button>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+</section>
