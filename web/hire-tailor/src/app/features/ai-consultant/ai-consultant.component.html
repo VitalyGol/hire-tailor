@@ -34,7 +34,9 @@
                     formatMessageTime(message.createdAt)
                   }}</time>
                 </div>
-                <p>{{ message.text }}</p>
+            
+                  <markdown [data]="message.text"></markdown>
+             
               </article>
             }
           } @else {

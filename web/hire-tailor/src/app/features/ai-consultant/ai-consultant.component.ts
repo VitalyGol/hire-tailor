@@ -19,6 +19,7 @@ import { ChatMessage } from '../../models/consultatnt-ai/chat-message.model';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { map, switchMap, tap } from 'rxjs';
+import { MarkdownModule } from 'ngx-markdown';
 
 @Component({
   selector: 'app-ai-consultant',
@@ -29,6 +30,7 @@ import { map, switchMap, tap } from 'rxjs';
     MatIconModule,
     MatInputModule,
     ReactiveFormsModule,
+    MarkdownModule
   ],
   templateUrl: './ai-consultant.component.html',
   styleUrl: './ai-consultant.component.scss',
