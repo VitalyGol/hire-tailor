@@ -1,9 +1,11 @@
 import {
   AfterViewInit,
   Component,
+  DestroyRef,
   ElementRef,
   ViewChild,
   computed,
+  inject,
   signal,
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -12,17 +14,11 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-
-const CHAT_HISTORY_STORAGE_KEY = 'ai-consultant-chat-history';
-
-type ChatMessageRole = 'user' | 'assistant';
-
-interface ChatMessage {
-  id: string;
-  role: ChatMessageRole;
-  text: string;
-  createdAt: string;
-}
+import { ConsultantAiService } from '../../services/consultant-ai-service';
+import { ChatMessage } from '../../models/consultatnt-ai/chat-message.model';
+import { ActivatedRoute } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { map, switchMap, tap } from 'rxjs';
 
 @Component({
   selector: 'app-ai-consultant',
@@ -40,10 +36,30 @@ interface ChatMessage {
 export class AiConsultantComponent implements AfterViewInit {
   @ViewChild('messageHistory') private messageHistory?: ElementRef<HTMLElement>;
 
+  private readonly consultantService = inject(ConsultantAiService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
+
+  private tailoringRequestId!: string;
+
   protected readonly messageControl = new FormControl('', { nonNullable: true });
-  protected readonly messages = signal<ChatMessage[]>(this.loadMessagesFromStorage());
+  protected readonly messages = signal<ChatMessage[]>([]);
   protected readonly isChatActive = signal(this.messages().length > 0);
   protected readonly hasMessages = computed(() => this.messages().length > 0);
+
+  constructor() {
+    this.route.paramMap
+      .pipe(
+        map(params => params.get('id')),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(id => {
+        if (!id) {
+          return;
+        }
+        this.tailoringRequestId = id;
+      });
+  }
 
   ngAfterViewInit(): void {
     if (this.isChatActive()) {
@@ -59,24 +75,20 @@ export class AiConsultantComponent implements AfterViewInit {
   protected sendMessage(): void {
     const text = this.messageControl.value.trim();
 
-    if (!text) {
+    if (!text || !this.tailoringRequestId) {
       return;
     }
-
-    const message: ChatMessage = {
-      id: this.createMessageId(),
-      role: 'user',
-      text,
-      createdAt: new Date().toISOString(),
-    };
-
-    const nextMessages = [...this.messages(), message];
-    this.messages.set(nextMessages);
-    this.saveMessagesToStorage(nextMessages);
-    this.messageControl.reset('');
-
-    // TODO: Add backend assistant response integration here when the API is available.
-    this.scrollToLatestMessage();
+    this.consultantService.askConsultant(text, this.tailoringRequestId).pipe(
+      tap(() => this.messageControl.reset()),
+      switchMap(() => this.consultantService.getChatHistory())
+    )
+    .subscribe(history => {
+        this.messages.set(history);
+        this.isChatActive.set(history.length > 0);
+        this.scrollToLatestMessage();
+    });
+    return;
+    
   }
 
   protected formatMessageTime(createdAt: string): string {
@@ -84,30 +96,6 @@ export class AiConsultantComponent implements AfterViewInit {
       hour: '2-digit',
       minute: '2-digit',
     }).format(new Date(createdAt));
-  }
-
-  private loadMessagesFromStorage(): ChatMessage[] {
-    const storedHistory = localStorage.getItem(CHAT_HISTORY_STORAGE_KEY);
-
-    if (!storedHistory) {
-      return [];
-    }
-
-    try {
-      const parsedHistory: unknown = JSON.parse(storedHistory);
-      return this.isChatMessageArray(parsedHistory) ? parsedHistory : [];
-    } catch (error) {
-      console.error('Failed to parse AI consultant chat history:', error);
-      return [];
-    }
-  }
-
-  private saveMessagesToStorage(messages: readonly ChatMessage[]): void {
-    try {
-      localStorage.setItem(CHAT_HISTORY_STORAGE_KEY, JSON.stringify(messages));
-    } catch (error) {
-      console.error('Failed to save AI consultant chat history:', error);
-    }
   }
 
   private scrollToLatestMessage(): void {
@@ -118,34 +106,5 @@ export class AiConsultantComponent implements AfterViewInit {
         historyElement.scrollTop = historyElement.scrollHeight;
       }
     });
-  }
-
-  private createMessageId(): string {
-    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-      return crypto.randomUUID();
-    }
-
-    return `ai-consultant-message-${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
-  }
-
-  private isChatMessageArray(value: unknown): value is ChatMessage[] {
-    return Array.isArray(value) && value.every(item => this.isChatMessage(item));
-  }
-
-  private isChatMessage(value: unknown): value is ChatMessage {
-    if (!this.isRecord(value)) {
-      return false;
-    }
-
-    return (
-      typeof value['id'] === 'string' &&
-      (value['role'] === 'user' || value['role'] === 'assistant') &&
-      typeof value['text'] === 'string' &&
-      typeof value['createdAt'] === 'string'
-    );
-  }
-
-  private isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null;
   }
 }

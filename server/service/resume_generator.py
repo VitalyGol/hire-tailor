@@ -1,7 +1,7 @@
 
 from core.base_provider import BaseProvider
 from models.ai.extract_models import UserProfile
-from formatters.resume_prompt_formatter import ResumePromptFormatter
+from formatters.resume_prompt_formatter import PromptFormatter
 from core.base_prompt_builder import BasePromptBuilder
 from models.ai.resume_model import ResumeModel
 
@@ -11,7 +11,7 @@ class ResumeGenerator:
         self.prompt_builder = prompt_builder
 
     def generate_resume(self, language: str, job_requirement: str, resume: UserProfile):
-        resume_str = ResumePromptFormatter.prepare_resume_for_prompt(resume)
+        resume_str = PromptFormatter.prepare_resume_for_prompt(resume)
         prompt = self.prompt_builder.get_resume_prompt(language, job_requirement, resume_str)
         data = self.provider.get_data(prompt, text_format=ResumeModel)
         return data

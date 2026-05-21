@@ -26,11 +26,13 @@
       <mat-card-content>
         <div #messageHistory class="message-history" aria-live="polite">
           @if (hasMessages()) {
-            @for (message of messages(); track message.id) {
+            @for (message of messages(); track message.createdAt;) {
               <article class="message" [class.assistant-message]="message.role === 'assistant'">
                 <div class="message-meta">
                   <span>{{ message.role === 'user' ? 'You' : 'AI Consultant' }}</span>
-                  <time [dateTime]="message.createdAt">{{ formatMessageTime(message.createdAt) }}</time>
+                  <time [dateTime]="message.createdAt">{{
+                    formatMessageTime(message.createdAt)
+                  }}</time>
                 </div>
                 <p>{{ message.text }}</p>
               </article>
@@ -43,7 +45,7 @@
           }
         </div>
 
-        <form class="message-form" (ngSubmit)="sendMessage()">
+        <form class="message-form">
           <mat-form-field appearance="outline">
             <mat-label>Message</mat-label>
             <input
@@ -52,12 +54,14 @@
               autocomplete="off"
               [formControl]="messageControl"
               aria-label="Message"
+              (keydown.enter)="sendMessage()"
             />
           </mat-form-field>
 
           <button
             mat-icon-button
-            type="submit"
+            type="button"
+            (click)="sendMessage()"
             aria-label="Send message"
             [disabled]="!messageControl.value.trim()"
           >

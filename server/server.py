@@ -4,9 +4,11 @@ from pydantic import ValidationError
 from core.config import Config
 from models.api.resume_request import ResumeRequest
 from providers.openai_provider import OpenAIProvider
+from models.api.consultant_request import ConsultantRequest
 from service.pdf import extract_text_from_pdf
 from service.prompt_builder import PromptBuilder
 from service.resume_generator import ResumeGenerator
+from service.consultant import ConsultantService
 
 
 app = Flask(__name__)
@@ -15,6 +17,20 @@ CORS(app)
 @app.route('/')
 def hello_world():
     return 'Hello, World!'
+
+@app.route('/consultant/ask', methods=['POST'])
+def ask_consultant():
+    try:
+        consultant_request = ConsultantRequest(**request.get_json())
+        response = ConsultantService(provider=OpenAIProvider(), prompt_builder=PromptBuilder()).ask_consultant(
+            job_requirement=consultant_request.job_requirement,
+            resume=consultant_request.resume,
+            history_chat=consultant_request.chat_history
+        )
+        return jsonify(response.model_dump()), 200
+    
+    except ValidationError as e:
+        return jsonify(e.errors()), 400
 
 @app.route('/resume/generate', methods=['POST'])
 def generate_resume():
