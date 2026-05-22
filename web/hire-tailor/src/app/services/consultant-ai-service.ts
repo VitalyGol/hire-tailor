@@ -7,6 +7,10 @@ import { TailoringStorageService } from './tailoring-storage.service';
 
 const CHAT_HISTORY_STORAGE_KEY = 'ai-consultant-chat-history';
 
+interface ConsultantAiResponse {
+  answer: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -16,11 +20,14 @@ export class ConsultantAiService {
   private readonly consultantUrl = `${environment.apiUrl}/consultant/ask`;
   private readonly historyChat: ChatMessage[] = [];
 
-  getChatHistory() {
+  getChatHistory(): Observable<ChatMessage[]> {
     return of(this.historyChat);
   }
 
-  askConsultant(question: string, tailoringRequestId: string): Observable<any> {
+  askConsultant(
+    question: string,
+    tailoringRequestId: string,
+  ): Observable<ConsultantAiResponse | undefined> {
     const offer = this.tailoringService.findEmployerById(tailoringRequestId);
     if (!offer) {
       return of(undefined);
@@ -39,13 +46,13 @@ export class ConsultantAiService {
       createdAt: new Date().toISOString(),
     });
     return this.httpClient
-      .post(this.consultantUrl, {
+      .post<ConsultantAiResponse>(this.consultantUrl, {
         resume: offer.userProfile,
         job_requirement: offer.jobRequirements,
         chat_history: this.historyChat,
       })
       .pipe(
-        tap((response: any) => {
+        tap(response => {
           this.historyChat.push({
             role: 'assistant',
             text: response.answer,
@@ -77,5 +84,4 @@ export class ConsultantAiService {
       console.error('Failed to save AI consultant chat history:', error);
     }
   }
-
 }

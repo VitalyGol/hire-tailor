@@ -30,7 +30,7 @@ import { MarkdownModule } from 'ngx-markdown';
     MatIconModule,
     MatInputModule,
     ReactiveFormsModule,
-    MarkdownModule
+    MarkdownModule,
   ],
   templateUrl: './ai-consultant.component.html',
   styleUrl: './ai-consultant.component.scss',
@@ -80,17 +80,18 @@ export class AiConsultantComponent implements AfterViewInit {
     if (!text || !this.tailoringRequestId) {
       return;
     }
-    this.consultantService.askConsultant(text, this.tailoringRequestId).pipe(
-      tap(() => this.messageControl.reset()),
-      switchMap(() => this.consultantService.getChatHistory())
-    )
-    .subscribe(history => {
+    this.consultantService
+      .askConsultant(text, this.tailoringRequestId)
+      .pipe(
+        tap(() => this.messageControl.reset()),
+        switchMap(() => this.consultantService.getChatHistory()),
+      )
+      .subscribe(history => {
         this.messages.set(history);
         this.isChatActive.set(history.length > 0);
         this.scrollToLatestMessage();
-    });
+      });
     return;
-    
   }
 
   protected formatMessageTime(createdAt: string): string {

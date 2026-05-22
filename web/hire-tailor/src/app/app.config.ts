@@ -11,6 +11,6 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideHttpClient(withInterceptors([spinnerInterceptor])),
     provideRouter(routes),
-    provideMarkdown()
+    provideMarkdown(),
   ],
 };

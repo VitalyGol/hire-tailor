@@ -26,7 +26,7 @@
       <mat-card-content>
         <div #messageHistory class="message-history" aria-live="polite">
           @if (hasMessages()) {
-            @for (message of messages(); track message.createdAt;) {
+            @for (message of messages(); track message.createdAt) {
               <article class="message" [class.assistant-message]="message.role === 'assistant'">
                 <div class="message-meta">
                   <span>{{ message.role === 'user' ? 'You' : 'AI Consultant' }}</span>
@@ -34,9 +34,8 @@
                     formatMessageTime(message.createdAt)
                   }}</time>
                 </div>
-            
-                  <markdown [data]="message.text"></markdown>
-             
+
+                <markdown [data]="message.text"></markdown>
               </article>
             }
           } @else {

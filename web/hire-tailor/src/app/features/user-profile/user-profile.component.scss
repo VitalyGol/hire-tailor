@@ -118,6 +118,11 @@ mat-card-content {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.one-column {
+  grid-template-columns: 1fr;
+  flex: 1;
+}
+
 .project-grid {
   flex: 1;
   grid-template-columns: minmax(220px, 0.8fr) minmax(260px, 1.2fr);
