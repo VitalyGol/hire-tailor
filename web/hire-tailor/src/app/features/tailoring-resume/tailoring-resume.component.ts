@@ -1,5 +1,6 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { JsonPipe } from '@angular/common';
 import {
   AbstractControl,
@@ -13,7 +14,7 @@ import {
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatChipsModule } from '@angular/material/chips';
+import { MatChipsModule, MatChipInputEvent } from '@angular/material/chips';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatDividerModule } from '@angular/material/divider';
@@ -37,19 +38,19 @@ import {
   UserProfile,
   WorkExperience,
   WorkProject,
-} from '../../models/shared/user-profile.model';
-import {
   CourseCertificateForm,
   EducationForm,
-  GeneratedResumePreview,
   PersonalInfoForm,
+  UserLanguageForm,
+  WorkExperienceForm,
+  WorkProjectForm,
+} from '../../models/shared/user-profile.model';
+import {
+  GeneratedResumePreview,
   ResumeForm,
   ResumeTemplate,
   ResumeTemplateLanguage,
   TemplatePreviewDialogData,
-  UserLanguageForm,
-  WorkExperienceForm,
-  WorkProjectForm,
 } from '../../models/tailoring-resume/tailoring-resume.model';
 import { TailoringStorageService } from '../../services/tailoring-storage.service';
 import { UploadService } from '../../services/upload.service';
@@ -200,6 +201,8 @@ export class TailoringResumeComponent {
     'native',
   ];
   protected readonly languages: readonly ResumeTemplateLanguage[] = ['Hebrew', 'English'];
+  protected readonly separatorKeysCodes: readonly number[] = [ENTER, COMMA];
+  protected readonly addOnBlur = true;
   protected readonly templates: readonly ResumeTemplate[] = [
     { TemplateId: 'he-modern', TemplateName: 'Modern Hebrew', Language: 'Hebrew' },
     { TemplateId: 'he-classic', TemplateName: 'Classic Hebrew', Language: 'Hebrew' },
@@ -320,6 +323,34 @@ export class TailoringResumeComponent {
     return this.workExperience.at(experienceIndex).controls.projects;
   }
 
+  protected addSkill(event: MatChipInputEvent, skillsControl: FormControl<string[]>): void {
+    const skill = event.value.trim();
+    event.chipInput?.clear();
+
+    if (!skill) {
+      return;
+    }
+
+    const skills = skillsControl.value;
+    const alreadyExists = skills.some(
+      existingSkill => existingSkill.toLowerCase() === skill.toLowerCase(),
+    );
+
+    if (alreadyExists) {
+      return;
+    }
+
+    skillsControl.setValue([...skills, skill]);
+    skillsControl.markAsDirty();
+    skillsControl.markAsTouched();
+  }
+
+  protected removeSkill(skill: string, skillsControl: FormControl<string[]>): void {
+    skillsControl.setValue(skillsControl.value.filter(existingSkill => existingSkill !== skill));
+    skillsControl.markAsDirty();
+    skillsControl.markAsTouched();
+  }
+
   protected addExperience(): void {
     this.workExperience.push(this.createWorkExperienceForm());
   }
@@ -376,6 +407,39 @@ export class TailoringResumeComponent {
     }
 
     this.snackBar.open('Resume data could not be saved.', 'Close', { duration: 4000 });
+  }
+
+  protected restoreDefaultResume(): void {
+    const offer = this.tailoringStorage.findEmployerById(this.requestedId()!);
+    const defaultProfile = this.tailoringStorage.getUserProfile();
+    if (!offer) {
+      this.snackBar.open(
+        'Failed to restore default resume. Tailoring request not found.',
+        'Close',
+        {
+          duration: 4000,
+        },
+      );
+      return;
+    }
+    if (!defaultProfile) {
+      this.snackBar.open('Failed to restore default resume. No default profile found.', 'Close', {
+        duration: 4000,
+      });
+      return;
+    }
+
+    const updatedOffer = { ...offer, userProfile: defaultProfile };
+    if (this.tailoringStorage.saveEmployer(updatedOffer)) {
+      this.offer.set(updatedOffer);
+      this.userProfile.set(defaultProfile);
+      this.resumeForm.patchValue(this.createResumeForm(this.userProfile()).getRawValue());
+      this.resumeForm.markAsPristine();
+      this.snackBar.open('Default resume restored successfully.', 'Close', { duration: 3000 });
+      return;
+    }
+
+    this.snackBar.open('Failed to restore default resume.', 'Close', { duration: 4000 });
   }
 
   protected hasControlError(control: AbstractControl, errorCode: string): boolean {
@@ -468,6 +532,10 @@ export class TailoringResumeComponent {
           [Validators.required, Validators.email],
           profile?.personalInfo.email,
         ),
+        phoneNumber: this.createTextControl(
+          [Validators.maxLength(10), Validators.pattern(/^\d+$/)],
+          profile?.personalInfo.phoneNumber ?? '',
+        ),
       }),
       professionalTitle: this.createTextControl([], profile?.professionalTitle),
       professionalSummary: this.createTextControl([], profile?.professionalSummary),
@@ -524,6 +592,7 @@ export class TailoringResumeComponent {
         [Validators.required, Validators.minLength(20)],
         value?.projectDescription,
       ),
+      skills: new FormControl<string[]>(value?.skills ?? [], { nonNullable: true }),
     });
   }
 
@@ -607,6 +676,7 @@ export class TailoringResumeComponent {
         projects: experience.controls.projects.controls.map(project => ({
           projectName: project.controls.projectName.value,
           projectDescription: project.controls.projectDescription.value,
+          skills: project.controls.skills.value || [],
         })),
       })),
       education: this.education.controls.map(education => ({

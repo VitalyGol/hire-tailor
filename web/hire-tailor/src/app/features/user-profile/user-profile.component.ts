@@ -31,16 +31,16 @@ import {
   UserProfile,
   WorkExperience,
   WorkProject,
-} from '../../models/shared/user-profile.model';
-import {
   CourseCertificateForm,
   EducationForm,
   PersonalInfoForm,
   UserLanguageForm,
-  UserProfileForm,
   WorkExperienceForm,
   WorkProjectForm,
-} from '../../models/user-profile/user-profile-form.model';
+} from '../../models/shared/user-profile.model';
+import { UserProfileForm } from '../../models/user-profile/user-profile-form.model';
+import { MatChipsModule, MatChipInputEvent } from '@angular/material/chips';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
 
 const MAX_RESUME_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
@@ -56,6 +56,7 @@ const MAX_RESUME_FILE_SIZE_BYTES = 5 * 1024 * 1024;
     MatInputModule,
     MatSelectModule,
     MatSnackBarModule,
+    MatChipsModule,
     ReactiveFormsModule,
   ],
   providers: [provideNativeDateAdapter()],
@@ -75,6 +76,9 @@ export class UserProfileComponent {
     'native',
   ];
 
+  protected readonly separatorKeysCodes: readonly number[] = [ENTER, COMMA];
+  protected readonly addOnBlur = true;
+
   protected readonly selectedResumeFileName = signal<string | null>(null);
   protected readonly isUploadingResume = signal(false);
   protected readonly hasResumeFile = computed(() => this.selectedResumeFileName() !== null);
@@ -84,6 +88,7 @@ export class UserProfileComponent {
       firstName: this.createTextControl([Validators.required, Validators.minLength(2)]),
       lastName: this.createTextControl([Validators.required, Validators.minLength(2)]),
       email: this.createTextControl([Validators.required, Validators.email]),
+      phoneNumber: this.createTextControl([Validators.maxLength(10), Validators.pattern(/^\d+$/)]),
     }),
     workExperience: new FormArray<WorkExperienceForm>([this.createWorkExperienceForm()]),
     education: new FormArray<EducationForm>([this.createEducationForm()]),
@@ -93,6 +98,34 @@ export class UserProfileComponent {
 
   constructor() {
     this.loadProfileFromStorage();
+  }
+
+  protected addSkill(event: MatChipInputEvent, skillsControl: FormControl<string[]>): void {
+    const skill = event.value.trim();
+    event.chipInput?.clear();
+
+    if (!skill) {
+      return;
+    }
+
+    const skills = skillsControl.value;
+    const alreadyExists = skills.some(
+      existingSkill => existingSkill.toLowerCase() === skill.toLowerCase(),
+    );
+
+    if (alreadyExists) {
+      return;
+    }
+
+    skillsControl.setValue([...skills, skill]);
+    skillsControl.markAsDirty();
+    skillsControl.markAsTouched();
+  }
+
+  protected removeSkill(skill: string, skillsControl: FormControl<string[]>): void {
+    skillsControl.setValue(skillsControl.value.filter(existingSkill => existingSkill !== skill));
+    skillsControl.markAsDirty();
+    skillsControl.markAsTouched();
   }
 
   protected get personalInfo(): PersonalInfoForm {
@@ -169,6 +202,7 @@ export class UserProfileComponent {
     }
 
     if (this.tailoringStorage.saveUserProfile(this.toUserProfile())) {
+      this.profileForm.markAsPristine();
       this.snackBar.open('Profile saved successfully.', 'Close', { duration: 3000 });
       return;
     }
@@ -269,6 +303,7 @@ export class UserProfileComponent {
         [Validators.required, Validators.minLength(20)],
         value?.projectDescription,
       ),
+      skills: new FormControl<string[]>(value?.skills ?? [], { nonNullable: true }),
     });
   }
 
@@ -350,7 +385,12 @@ export class UserProfileComponent {
   }
 
   private loadProfileFromResume(profile: UserProfile): void {
-    this.personalInfo.setValue(profile.personalInfo);
+    this.personalInfo.setValue({
+      firstName: profile.personalInfo.firstName,
+      lastName: profile.personalInfo.lastName,
+      email: profile.personalInfo.email,
+      phoneNumber: profile.personalInfo.phoneNumber ?? '',
+    });
     this.replaceFormArray(this.workExperience, profile.workExperience, item =>
       this.createWorkExperienceForm(item),
     );
@@ -383,6 +423,7 @@ export class UserProfileComponent {
         projects: experience.controls.projects.controls.map(project => ({
           projectName: project.controls.projectName.value,
           projectDescription: project.controls.projectDescription.value,
+          skills: project.controls.skills.value || [],
         })),
       })),
       education: this.education.controls.map(education => ({
