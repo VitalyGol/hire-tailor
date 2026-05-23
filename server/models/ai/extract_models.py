@@ -18,13 +18,14 @@ class PersonalInfo(BaseModel):
     firstName: str
     lastName: str
     email: str
-
+    phoneNumber: Optional[str] = None   
 
 class WorkProject(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     projectName: str
     projectDescription: str
+    skills: List[str]
 
 
 class WorkExperience(BaseModel):

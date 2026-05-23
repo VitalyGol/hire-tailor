@@ -44,6 +44,14 @@
               <mat-error>Enter a valid email address.</mat-error>
             }
           </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Phone number</mat-label>
+            <input matInput formControlName="phoneNumber" type="tel" autocomplete="tel" />
+            @if (hasControlError(personalInfo.controls.phoneNumber, 'pattern')) {
+              <mat-error>Enter a valid phone number.</mat-error>
+            }
+          </mat-form-field>
         </div>
       </mat-card-content>
     </mat-card>
@@ -130,26 +138,58 @@
                   let projectIndex = $index
                 ) {
                   <div class="nested-item" [formGroupName]="projectIndex">
-                    <div class="form-grid project-grid">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Project name</mat-label>
-                        <input matInput formControlName="projectName" />
-                        @if (hasControlError(project.controls.projectName, 'required')) {
-                          <mat-error>Project name is required.</mat-error>
-                        }
-                      </mat-form-field>
+                    <div class="form-grid one-column">
+                      <div class="form-grid project-grid">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Project name</mat-label>
+                          <input matInput formControlName="projectName" />
+                          @if (hasControlError(project.controls.projectName, 'required')) {
+                            <mat-error>Project name is required.</mat-error>
+                          }
+                        </mat-form-field>
 
-                      <mat-form-field appearance="outline">
-                        <mat-label>Project description</mat-label>
-                        <textarea matInput formControlName="projectDescription" rows="3"></textarea>
-                        @if (hasControlError(project.controls.projectDescription, 'required')) {
-                          <mat-error>Project description is required.</mat-error>
-                        } @else if (
-                          hasControlError(project.controls.projectDescription, 'minlength')
-                        ) {
-                          <mat-error>Description must be at least 20 characters.</mat-error>
-                        }
-                      </mat-form-field>
+                        <mat-form-field appearance="outline">
+                          <mat-label>Project description</mat-label>
+                          <textarea
+                            matInput
+                            formControlName="projectDescription"
+                            rows="3"
+                          ></textarea>
+                          @if (hasControlError(project.controls.projectDescription, 'required')) {
+                            <mat-error>Project description is required.</mat-error>
+                          } @else if (
+                            hasControlError(project.controls.projectDescription, 'minlength')
+                          ) {
+                            <mat-error>Description must be at least 20 characters.</mat-error>
+                          }
+                        </mat-form-field>
+                      </div>
+                      <div>
+                        <mat-form-field appearance="outline">
+                          <mat-label>Skills</mat-label>
+                          <mat-chip-grid
+                            #chipGrid
+                            aria-label="Enter skills"
+                            formControlName="skills"
+                          >
+                            @for (skill of project.controls.skills.value; track skill) {
+                              <mat-chip-row (removed)="removeSkill(skill, project.controls.skills)">
+                                {{ skill }}
+                                <button matChipRemove [attr.aria-label]="'remove ' + skill">
+                                  <mat-icon>cancel</mat-icon>
+                                </button>
+                              </mat-chip-row>
+                            }
+                          </mat-chip-grid>
+                          <input
+                            placeholder="New skill..."
+                            [matChipInputFor]="chipGrid"
+                            [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                            [matChipInputAddOnBlur]="addOnBlur"
+                            (matChipInputTokenEnd)="addSkill($event, project.controls.skills)"
+                          />
+                        </mat-form-field>
+                      </div>
                     </div>
 
                     <button
@@ -388,7 +428,11 @@
         <mat-icon>upload_file</mat-icon>
         {{ isUploadingResume() ? 'Uploading Resume' : 'Extract Data From Resume' }}
       </button>
-      <button mat-flat-button (click)="saveProfile()">
+      <button
+        mat-flat-button
+        [disabled]="profileForm.invalid || profileForm.pristine"
+        (click)="saveProfile()"
+      >
         <mat-icon>save</mat-icon>
         Save Profile
       </button>

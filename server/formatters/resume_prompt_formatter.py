@@ -1,6 +1,14 @@
 from models.ai.extract_models import UserProfile
+from models.api.consultant_request import ChatMessage
 
-class ResumePromptFormatter:
+class PromptFormatter:
+
+    @staticmethod
+    def prepare_history_chat_for_prompt(history_chat: list[ChatMessage]) -> str:
+        lines: list[str] = []
+        for msg in history_chat:
+            lines.append(f"{msg.role}: {msg.text}")
+        return "\n".join(lines) if history_chat else ""   
     
     @staticmethod
     def prepare_resume_for_prompt(profile: UserProfile) -> str:
@@ -25,6 +33,8 @@ class ResumePromptFormatter:
                     lines.append("Projects:")
                     for project in experience.projects:
                         lines.append(f"- {project.projectName}: {project.projectDescription}")
+                        if project.skills:
+                            lines.append(f"  Skills: {', '.join(project.skills)}")
 
                 lines.append("")
         else:

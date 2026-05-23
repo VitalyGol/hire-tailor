@@ -46,7 +46,6 @@ export class AppLayoutComponent {
       icon: 'history',
       route: '/history',
     },
-   
   ];
 
   protected readonly employerList: EmployerTailoringRequest[] = [];
