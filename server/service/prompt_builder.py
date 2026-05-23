@@ -5,7 +5,7 @@ class PromptBuilder(BasePromptBuilder):
     def get_resume_prompt(self, language: str, job_requirement: str, resume: str):
         prompt = {
             "id": "pmpt_6a0422fe89208194a3a61dc00ecab910066104b9e7dc11a6",
-            "version": "13",
+            "version": "14",
             "variables": {
             "resume": resume,
             "job_requirements": job_requirement,
@@ -17,7 +17,7 @@ class PromptBuilder(BasePromptBuilder):
     def extract_info_prompt(self, resume: str):
         prompt =  {
             "id": "pmpt_6a0575331ae88197a60f5cfd70c72fab0e0c4e855c31cb5b",
-            "version": "2",
+            "version": "5",
             "variables": {
             "resume": resume
             }

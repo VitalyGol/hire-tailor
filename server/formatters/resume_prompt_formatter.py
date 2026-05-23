@@ -33,6 +33,8 @@ class PromptFormatter:
                     lines.append("Projects:")
                     for project in experience.projects:
                         lines.append(f"- {project.projectName}: {project.projectDescription}")
+                        if project.skills:
+                            lines.append(f"  Skills: {', '.join(project.skills)}")
 
                 lines.append("")
         else:

@@ -18,7 +18,11 @@ export class ConsultantAiService {
   private readonly httpClient = inject(HttpClient);
   private readonly tailoringService = inject(TailoringStorageService);
   private readonly consultantUrl = `${environment.apiUrl}/consultant/ask`;
-  private readonly historyChat: ChatMessage[] = [];
+  private historyChat: ChatMessage[] = [];
+
+  startChatSession(): void {
+    this.historyChat = [];
+  }
 
   getChatHistory(): Observable<ChatMessage[]> {
     return of(this.historyChat);

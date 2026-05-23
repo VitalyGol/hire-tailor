@@ -71,6 +71,7 @@ export class AiConsultantComponent implements AfterViewInit {
 
   protected startConsultation(): void {
     this.isChatActive.set(true);
+    this.consultantService.startChatSession();
     this.scrollToLatestMessage();
   }
 
