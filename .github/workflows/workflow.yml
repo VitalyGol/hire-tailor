@@ -11,7 +11,7 @@ jobs:
           run: cd server
 
         - name: Install dependencies
-          run:  pip install -r requirements.txt
+          run:  pip3 install -r requirements.txt
         
         - name: Lint code
           run: flake8 service --count --select=E9,F63,F7,F82 --show-source --statistics
