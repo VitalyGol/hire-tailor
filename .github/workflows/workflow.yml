@@ -1,9 +1,34 @@
 name: CI workflow
 jobs:
-    build:
+    build-server:
       runs-on: ubuntu-latest
       container: python:3.12
-      
+      steps:
+        - name: actions/checkout@v3
+          uses: actions/checkout@v3
+
+        - name: Goto project directory
+          run: cd server
+
+        - name: Install dependencies
+          run:  pip install -r requirements.txt
+        
+        - name: Lint code
+          run: flake8 service --count --select=E9,F63,F7,F82 --show-source --statistics
+    
+    build-client:
+      runs-on: node:20-alpine
+      container: node:20-alpine
+      steps:
+        - name: actions/checkout@v3
+          uses: actions/checkout@v3
+
+        - name: Goto project directory
+          run: cd web/hire-tailor
+
+        - name: Install dependencies
+          run: npm install
+
 
 on:
   push:
