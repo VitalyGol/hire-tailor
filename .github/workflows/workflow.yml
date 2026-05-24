@@ -10,6 +10,9 @@ jobs:
         - name: Goto project directory
           run: cd server
 
+        - name: Set activate source
+          run: source venv/bin/activate
+
         - name: Install dependencies
           run:  pip3 install -r requirements.txt
         
