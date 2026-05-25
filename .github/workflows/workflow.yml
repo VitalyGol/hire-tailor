@@ -12,8 +12,8 @@ jobs:
 
         - name: Install dependencies
           run:  |
-              python -m pip3 install --upgrade pip
-              pip3 install -r requirements.txt
+              python -m pip install --upgrade pip
+              pip install -r requirements.txt
         
         - name: Lint code
           run: flake8 service --count --select=E9,F63,F7,F82 --show-source --statistics
