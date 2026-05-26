@@ -5,8 +5,8 @@ jobs:
       container: python:3.12
 
       defaults:
-      run:
-        working-directory: server
+        run:
+          working-directory: server
       
       steps:
         - name: actions/checkout@v3
@@ -25,8 +25,8 @@ jobs:
       container: node:20-alpine
 
       defaults:
-      run:
-        working-directory: web/hire-tailor
+        run:
+          working-directory: web/hire-tailor
 
       steps:
         - name: actions/checkout@v3
