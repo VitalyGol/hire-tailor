@@ -1,10 +1,11 @@
+from typing import List
 from core.base_provider import BaseProvider
 from formatters.resume_prompt_formatter import PromptFormatter
 from models.ai.extract_models import UserProfile
 from models.api.consultant_request import ChatMessage
 from server.models.api.consultant_response import ConsultantResponse
 from service.prompt_builder import PromptBuilder
-from typing import List
+
 
 
 class ConsultantService:
@@ -15,9 +16,10 @@ class ConsultantService:
     def ask_consultant(self, history_chat: List[ChatMessage], job_requirement: str, resume: UserProfile):
         resume_str = PromptFormatter.prepare_resume_for_prompt(resume)
         question = history_chat[-1].text if history_chat else "What can I improve in my resume for this job?"
-        history_chat_str = PromptFormatter.prepare_history_chat_for_prompt(history_chat[-6:-1]) if len(history_chat) > 1 else ""
+        if len(history_chat) > 1:
+            history_chat_str = PromptFormatter.prepare_history_chat_for_prompt(history_chat[-6:-1])
+        else:
+            history_chat_str = ""
         prompt = self.prompt_builder.consultatnt_prompt(question, history_chat_str, job_requirement, resume_str)
         data = self.provider.get_data(prompt, text_format=ConsultantResponse)
         return data
-
-   
