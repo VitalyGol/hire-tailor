@@ -1,6 +1,5 @@
 from core.base_prompt_builder import BasePromptBuilder
 
-
 class PromptBuilder(BasePromptBuilder):
     def get_resume_prompt(self, language: str, job_requirement: str, resume: str):
         prompt = {

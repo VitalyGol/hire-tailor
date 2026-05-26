@@ -2,7 +2,7 @@ from core.base_provider import BaseProvider
 from formatters.resume_prompt_formatter import PromptFormatter
 from models.ai.extract_models import UserProfile
 from models.api.consultant_request import ChatMessage
-from models.ai.consultant_response import ConsultantResponse
+from server.models.api.consultant_response import ConsultantResponse
 from service.prompt_builder import PromptBuilder
 from typing import List
 
