@@ -1,17 +1,31 @@
+""""Module responsible for formatting user profiles and
+chat history into prompts suitable for AI processing."""
 from models.ai.extract_models import UserProfile
 from models.api.consultant_request import ChatMessage
 
-class PromptFormatter:
 
+class PromptFormatter:
+    """Module responsible for formatting user profiles and chat history 
+    into prompts suitable for AI processing."""
     @staticmethod
     def prepare_history_chat_for_prompt(history_chat: list[ChatMessage]) -> str:
+        """Formats the chat history into a string format suitable for inclusion in prompts.
+        Each message in the chat history is formatted as "role: text" and separated by newlines.
+        :param history_chat: A list of ChatMessage objects representing the chat history.
+        :return: A formatted string representing the chat history, or an empty string 
+        if no history is provided.
+        """
         lines: list[str] = []
         for msg in history_chat:
             lines.append(f"{msg.role}: {msg.text}")
-        return "\n".join(lines) if history_chat else ""   
-    
+        return "\n".join(lines) if history_chat else ""
+
     @staticmethod
     def prepare_resume_for_prompt(profile: UserProfile) -> str:
+        """Formats the user profile into a string format suitable for inclusion in prompts.
+        :param profile: The UserProfile object containing the user's information.
+        :return: A formatted string representing the user's profile.
+        """
         lines: list[str] = []
 
         def format_date_range(start_date: str, end_date: str | None) -> str:
@@ -32,9 +46,11 @@ class PromptFormatter:
                 if experience.projects:
                     lines.append("Projects:")
                     for project in experience.projects:
-                        lines.append(f"- {project.projectName}: {project.projectDescription}")
+                        lines.append(
+                            f"- {project.projectName}: {project.projectDescription}")
                         if project.skills:
-                            lines.append(f"  Skills: {', '.join(project.skills)}")
+                            lines.append(
+                                f"  Skills: {', '.join(project.skills)}")
 
                 lines.append("")
         else:

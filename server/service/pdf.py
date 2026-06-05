@@ -1,4 +1,3 @@
-import base64
 import io
 
 from pypdf import PdfReader
@@ -31,8 +30,8 @@ def extract_text_from_pdf(pdf_bytes: bytes) -> str:
 
         return extracted_text
 
-    except PdfReadError:
-        raise ValueError("Invalid PDF file")
+    except PdfReadError as e:
+        raise ValueError("Invalid PDF file") from e
 
     except Exception as e:
-        raise ValueError(f"Failed to process PDF: {str(e)}")
+        raise ValueError("Failed to process PDF") from e

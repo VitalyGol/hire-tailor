@@ -1,6 +1,5 @@
 from core.base_prompt_builder import BasePromptBuilder
 
-
 class PromptBuilder(BasePromptBuilder):
     def get_resume_prompt(self, language: str, job_requirement: str, resume: str):
         prompt = {
@@ -13,7 +12,7 @@ class PromptBuilder(BasePromptBuilder):
             }
         }
         return prompt
-        
+
     def extract_info_prompt(self, resume: str):
         prompt =  {
             "id": "pmpt_6a0575331ae88197a60f5cfd70c72fab0e0c4e855c31cb5b",
@@ -23,7 +22,7 @@ class PromptBuilder(BasePromptBuilder):
             }
         }
         return prompt
-    
+
     def consultatnt_prompt(self,question: str, history_chat: str, job_requirement: str, resume: str):
         prompt = {
             "id": "pmpt_6a06c8ba8128819592587478a484f8780511c3be90afb08b",
