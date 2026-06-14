@@ -46,7 +46,7 @@
           }
         </div>
 
-        <form class="message-form">
+        <form class="message-form" (submit)="sendMessage($event)">
           <mat-form-field appearance="outline">
             <mat-label>Message</mat-label>
             <input
@@ -55,14 +55,14 @@
               autocomplete="off"
               [formControl]="messageControl"
               aria-label="Message"
-              (keydown.enter)="sendMessage()"
             />
           </mat-form-field>
 
           <button
             mat-icon-button
             type="button"
-            (click)="sendMessage()"
+            (click)="sendMessage($event)"
+            (keydown.enter)="sendMessage($event)"
             aria-label="Send message"
             [disabled]="!messageControl.value.trim()"
           >

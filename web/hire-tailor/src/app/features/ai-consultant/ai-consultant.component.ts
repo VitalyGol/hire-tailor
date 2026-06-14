@@ -75,7 +75,8 @@ export class AiConsultantComponent implements AfterViewInit {
     this.scrollToLatestMessage();
   }
 
-  protected sendMessage(): void {
+  protected sendMessage(event: Event): void {
+    event.preventDefault();
     const text = this.messageControl.value.trim();
 
     if (!text || !this.tailoringRequestId) {
