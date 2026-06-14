@@ -3,7 +3,7 @@ from core.base_provider import BaseProvider
 from formatters.resume_prompt_formatter import PromptFormatter
 from models.ai.extract_models import UserProfile
 from models.api.consultant_request import ChatMessage
-from server.models.api.consultant_response import ConsultantResponse
+from models.api.consultant_response import ConsultantResponse
 from service.prompt_builder import PromptBuilder
 
 
@@ -21,5 +21,5 @@ class ConsultantService:
         else:
             history_chat_str = ""
         prompt = self.prompt_builder.consultatnt_prompt(question, history_chat_str, job_requirement, resume_str)
-        data = self.provider.get_data(prompt, text_format=ConsultantResponse)
+        data = self.provider.get_parsed_data(prompt, text_format=ConsultantResponse)
         return data
