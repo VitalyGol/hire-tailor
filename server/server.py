@@ -14,8 +14,10 @@ from flask_cors import CORS
 from pydantic import ValidationError
 from core.config import Config
 from providers.openai_provider import OpenAIProvider
+from providers.qwen_provider import QwenProvider
 from models.api.consultant_request import ConsultantRequest
 from models.api.resume_request import ResumeRequest
+from service.qwen_prompt_builder import QwenPromptBuilder
 from service.pdf import extract_text_from_pdf
 from service.prompt_builder import PromptBuilder
 from service.resume_generator import ResumeGenerator
@@ -36,8 +38,8 @@ def ask_consultant():
     """
     try:
         consultant_request = ConsultantRequest(**request.get_json())
-        response = ConsultantService(provider=OpenAIProvider(),
-                                     prompt_builder=PromptBuilder()).ask_consultant(
+        response = ConsultantService(provider=QwenProvider(),
+                                     prompt_builder=QwenPromptBuilder()).ask_consultant(
             job_requirement=consultant_request.job_requirement,
             resume=consultant_request.resume,
             history_chat=consultant_request.chat_history
