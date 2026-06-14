@@ -1,0 +1,38 @@
+<section class="page">
+  <header class="page-header">
+    <p class="eyebrow">Workspace</p>
+    <h1>{{ title() }}</h1>
+  </header>
+  @if (archivedEmployers.length > 0) {
+    <mat-card class="hisory-card">
+      <mat-card-content>
+        <mat-accordion multi>
+          @for (employer of archivedEmployers; track employer) {
+            <mat-expansion-panel>
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  {{ employer.jobPosition }} at {{ employer.employerName }}
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              <p class="pre-style">{{ employer.jobRequirements }}</p>
+              <mat-action-row>
+                <button mat-stroked-button type="button" (click)="markAsRelevant(employer.id)">
+                  <mat-icon>archive</mat-icon>
+                  Mark as Relevant
+                </button>
+                <button mat-button type="button" color="warn" (click)="removeEmployer(employer.id)">
+                  Remove employer
+                </button>
+              </mat-action-row>
+            </mat-expansion-panel>
+          }
+        </mat-accordion>
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <div class="empty-state">
+      <mat-icon aria-hidden="true">archive</mat-icon>
+      <p>No archived employers found.</p>
+    </div>
+  }
+</section>
