@@ -6,7 +6,24 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 class QwenProvider(BaseProvider):
+    """
+    Provider for interacting with a Qwen-based language model.
+
+    This class loads a pretrained Qwen model and tokenizer and provides
+    methods for generating text responses and wrapping them into
+    application-specific response objects.
+    """
+    
     def __init__(self):
+        """
+        Initialize the Qwen model and tokenizer.
+
+        The model is loaded from the path specified in
+        ``Config.HR_CHATBOT_MODEL``.
+
+        GPU acceleration is automatically enabled when CUDA is available.
+        The model is switched to evaluation mode after loading.
+        """
         super().__init__()
 
         self.model_name = Config.HR_CHATBOT_MODEL
@@ -15,6 +32,7 @@ class QwenProvider(BaseProvider):
             self.model_name,
             trust_remote_code=True
         )
+
 
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
@@ -26,6 +44,9 @@ class QwenProvider(BaseProvider):
         self.model.eval()
 
     def get_data(self, messages):
+        """
+        Generate a response from the language model.
+        """
         text = self.tokenizer.apply_chat_template(
             messages,
             tokenize=False,
@@ -57,6 +78,6 @@ class QwenProvider(BaseProvider):
 
         return answer.strip()
 
-    def get_parsed_data(self, prompt, text_format="text"):
+    def get_parsed_data(self, prompt, text_format='text'):
         output = self.get_data(prompt)
         return ConsultantResponse(answer=output)

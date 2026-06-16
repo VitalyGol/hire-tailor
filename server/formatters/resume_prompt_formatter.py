@@ -17,8 +17,8 @@ class PromptFormatter:
         """
         lines: list[str] = []
         for msg in history_chat:
-            lines.append(f"{msg.role}: {msg.text}")
-        return "\n".join(lines) if history_chat else ""
+            lines.append(f" - role: {msg.role} content:{msg.text}")
+        return "\n".join(lines) if history_chat else "no data"
 
     @staticmethod
     def prepare_resume_for_prompt(profile: UserProfile) -> str:

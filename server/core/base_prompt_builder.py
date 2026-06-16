@@ -6,6 +6,8 @@ This abstract class serves as a blueprint for specific prompt builders that will
 the methods to create prompts based on the provided job requirements,
 resume content, and user messages.
 """
+from typing import List
+from models.api.consultant_request import ChatMessage
 from abc import ABC, abstractmethod
 
 
@@ -41,7 +43,7 @@ class BasePromptBuilder(ABC):
         :return: A prompt string that can be used for information extraction."""
 
     @abstractmethod
-    def consultatnt_prompt(self, user_message: str, job_requirement: str, resume: str):
+    def consultatnt_prompt(self, question: str, history_chat: List[ChatMessage], job_requirement: str, resume: str):
         """Abstract method to generate a prompt for consulting a career advisor.
         It takes the user's message, job requirements, and resume content as input 
         and returns a prompt
