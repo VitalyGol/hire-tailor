@@ -72,14 +72,15 @@ export class AiConsultantComponent implements AfterViewInit {
   protected startConsultation(): void {
     this.isChatActive.set(true);
     this.consultantService.startChatSession();
+    this.sendMessage();
     this.scrollToLatestMessage();
   }
 
-  protected sendMessage(event: Event): void {
-    event.preventDefault();
+  protected sendMessage(event?: Event): void {
+    event?.preventDefault();
     const text = this.messageControl.value.trim();
 
-    if (!text || !this.tailoringRequestId) {
+    if (!this.tailoringRequestId) {
       return;
     }
     this.consultantService

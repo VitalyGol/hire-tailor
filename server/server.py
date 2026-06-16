@@ -9,7 +9,7 @@ OpenAIProvider,
 PromptBuilder, ResumeGenerator, and ConsultantService to process the incoming 
 requests and generate appropriate responses.
 """
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 from pydantic import ValidationError
 from core.config import Config
@@ -27,6 +27,14 @@ from service.consultant import ConsultantService
 app = Flask(__name__)
 CORS(app)
 
+# Initialize services
+consultant_service = ConsultantService(provider=QwenProvider(), prompt_builder=QwenPromptBuilder())
+
+
+@app.route('/', methods=['GET'])
+def test_page():
+    return render_template("index.html")
+
 @app.route('/consultant/ask', methods=['POST'])
 def ask_consultant():
     """
@@ -37,9 +45,9 @@ def ask_consultant():
     messages and status codes.
     """
     try:
+        
         consultant_request = ConsultantRequest(**request.get_json())
-        response = ConsultantService(provider=QwenProvider(),
-                                     prompt_builder=QwenPromptBuilder()).ask_consultant(
+        response = consultant_service.ask_consultant(
             job_requirement=consultant_request.job_requirement,
             resume=consultant_request.resume,
             history_chat=consultant_request.chat_history
@@ -145,6 +153,6 @@ def extract_info():
 
 if __name__ == '__main__':
     if Config.FLASK_ENV == "development":
-        app.run(debug=True)
+        app.run(debug=True, use_reloader=False)
     else:
         app.run(debug=False)

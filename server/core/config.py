@@ -14,6 +14,7 @@ class Config: # pylint: disable=too-few-public-methods
         FLASK_ENV (str): The environment in which the Flask application is running 
         (e.g., development, production).
         ALLOWED_EXTENSIONS (list): A list of allowed file extensions for resume uploads.
+        HR_CHATBOT_MODEL (str): The name of the model used for the HR chatbot functionality.
     """
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
     OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
