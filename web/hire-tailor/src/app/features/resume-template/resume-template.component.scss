@@ -11,7 +11,7 @@
   padding: 18mm;
   background: #ffffff;
   color: #111111;
-  font-family: Arial, "Helvetica Neue", sans-serif;
+  font-family: Arial, 'Helvetica Neue', sans-serif;
   font-size: 11pt;
   line-height: 1.45;
 }
@@ -96,7 +96,7 @@ li {
   margin-top: 0;
 }
 
-[dir="rtl"] ul {
+[dir='rtl'] ul {
   padding-inline-start: 0;
   padding-inline-end: 20px;
 }

@@ -83,6 +83,8 @@ export class AiConsultantComponent implements AfterViewInit {
     if (!this.tailoringRequestId) {
       return;
     }
+
+    this.messageControl.reset();
     this.consultantService
       .askConsultant(text, this.tailoringRequestId)
       .pipe(

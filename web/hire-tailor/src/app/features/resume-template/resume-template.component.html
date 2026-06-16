@@ -11,7 +11,9 @@
 
       @if (hasText(resumeData.personalInfo.email)) {
         <address>
-          <a [href]="'mailto:' + resumeData.personalInfo.email">{{ resumeData.personalInfo.email }}</a>
+          <a [href]="'mailto:' + resumeData.personalInfo.email">{{
+            resumeData.personalInfo.email
+          }}</a>
         </address>
       }
     </header>
