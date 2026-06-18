@@ -5,6 +5,8 @@ from models.ai.extract_models import UserProfile
 
 
 class ExtractorService:
+    """Service for extracting a structured user profile from resume text."""
+
     def __init__(self, provider: BaseProvider, prompt_builder: BasePromptBuilder):
         self.provider = provider
         self.prompt_builder = prompt_builder
@@ -17,7 +19,7 @@ class ExtractorService:
         response = UserProfile.model_validate_json(data)
 
         return response
-    
+
     def _extract_json(self, data: str):
         text = data.strip()
         text = re.sub(r"^```json\s*", "", text)

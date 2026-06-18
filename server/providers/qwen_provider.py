@@ -13,7 +13,7 @@ class QwenProvider(BaseProvider):
     methods for generating text responses and wrapping them into
     application-specific response objects.
     """
-    
+
     def __init__(self):
         """
         Initialize the Qwen model and tokenizer.

@@ -13,6 +13,8 @@ from service.prompt_builder import PromptBuilder
 
 
 class ConsultantService:
+    """Service for generating interview coaching responses from chat context."""
+
     def __init__(self, provider: BaseProvider, prompt_builder: PromptBuilder):
         self.provider = provider
         self.prompt_builder = prompt_builder
@@ -34,18 +36,17 @@ class ConsultantService:
             """
 
         return ConsultantResponse(answer=text)
-    
+
     def _extract_json(self, data: str) -> str:
         text = data.strip()
         text = re.sub(r"^```json\s*", "", text)
         text = re.sub(r"^```\s*", "", text)
         text = re.sub(r"\s*```$", "", text)
         return text
-    
+
     def is_valid_json(self, text: str) -> bool:
         try:
             ConsultantAnswerModel.model_validate_json(text)
             return True
         except ValidationError:
             return False
-

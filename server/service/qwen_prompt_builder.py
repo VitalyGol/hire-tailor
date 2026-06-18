@@ -5,33 +5,35 @@ from models.api.consultant_request import ChatMessage
 
 
 class QwenPromptBuilder(BasePromptBuilder):
+    """Prompt builder that creates chat prompts for the Qwen provider."""
+
     def consultatnt_prompt(self, user_message: str, history_chat: List[ChatMessage], job_requirement: str, resume: str):
         if len(history_chat) <= 1:
             return [
                     {"role": "system", "content": self._format_system_start_interview()},
                     {"role": "user", "content": (
-                        """
+                        f"""
                             # Candidate resume:
 
                             {resume}
 
                             # Job requirements:
 
-                            {job_requirements}
+                            {job_requirement}
 
                             Ask the first interview question.
                         """
                     )}
                 ]
-        
+
         assistant_questions = [ item.text for item in history_chat if item.role == "assistant"]
         last_question = assistant_questions[-1]
-      
+
         history_chat_str = PromptFormatter.prepare_history_chat_for_prompt(history_chat[-6:-1])
 
         return [
             {"role": "system", "content": self._format_system_prompt()},
-            {"role": "user", "content": 
+            {"role": "user", "content":
              f"""
                 Job Requirements
 
@@ -50,15 +52,14 @@ class QwenPromptBuilder(BasePromptBuilder):
                 {history_chat_str}
              """}
         ]
- 
-    
+
     def get_resume_prompt(self, job_requirement: str, resume: str, language: str):
         return ""
-    
+
     def extract_info_prompt(self, resume: str, schema: str):
         return [
-            {"role": "system", "content": 
-             f"""
+            {"role": "system", "content":
+            """
                 Extract structured data from CV/résumé text and return only valid JSON.
 
                 # Instructions
@@ -89,7 +90,7 @@ class QwenPromptBuilder(BasePromptBuilder):
                 beginner, intermediate, advanced, fluent, native.
             """
             },
-            {"role": "user", "content": 
+            {"role": "user", "content":
              f"""
                 # JSON Schema
                 {schema}
@@ -98,9 +99,9 @@ class QwenPromptBuilder(BasePromptBuilder):
                 {resume}
             """
         }]
-    
+
     def _format_system_start_interview(self):
-        return f"""
+        return """
 
             # Role
 
@@ -123,7 +124,7 @@ class QwenPromptBuilder(BasePromptBuilder):
 
             Output only the interview question.
             """
-    
+
     def _format_system_prompt(self):
         return """
             # Role

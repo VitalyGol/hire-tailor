@@ -46,7 +46,7 @@ def ask_consultant():
     messages and status codes.
     """
     try:
-        
+
         consultant_request = ConsultantRequest(**request.get_json())
         response = consultant_service.ask_consultant(
             job_requirement=consultant_request.job_requirement,

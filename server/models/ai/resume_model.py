@@ -5,6 +5,8 @@ from pydantic import BaseModel, ConfigDict
 from models.ai.extract_models import CourseCertificate, Education, UserLanguage, WorkExperience
 
 class ResumeModel(BaseModel):
+    """Tailored resume content generated for a specific job requirement."""
+
     model_config = ConfigDict(extra="forbid")
 
     professionalTitle: str

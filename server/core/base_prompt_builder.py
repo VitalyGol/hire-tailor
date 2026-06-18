@@ -7,8 +7,8 @@ the methods to create prompts based on the provided job requirements,
 resume content, and user messages.
 """
 from typing import List
-from models.api.consultant_request import ChatMessage
 from abc import ABC, abstractmethod
+from models.api.consultant_request import ChatMessage
 
 
 class BasePromptBuilder(ABC):

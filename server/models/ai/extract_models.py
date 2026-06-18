@@ -5,6 +5,8 @@ from pydantic import BaseModel, ConfigDict
 
 
 class UserLanguageLevel(str, Enum):
+    """Supported proficiency levels for extracted user languages."""
+
     beginner = "beginner"
     intermediate = "intermediate"
     advanced = "advanced"
@@ -13,6 +15,8 @@ class UserLanguageLevel(str, Enum):
 
 
 class PersonalInfo(BaseModel):
+    """Personal contact details extracted from a user's resume."""
+
     model_config = ConfigDict(extra="forbid")
 
     firstName: str
@@ -21,6 +25,8 @@ class PersonalInfo(BaseModel):
     phoneNumber: Optional[str] = None   
 
 class WorkProject(BaseModel):
+    """Project details associated with a work experience entry."""
+
     model_config = ConfigDict(extra="forbid")
 
     projectName: str
@@ -29,6 +35,8 @@ class WorkProject(BaseModel):
 
 
 class WorkExperience(BaseModel):
+    """Professional experience entry extracted from a user's resume."""
+
     model_config = ConfigDict(extra="forbid")
 
     startDate: str
@@ -39,6 +47,8 @@ class WorkExperience(BaseModel):
 
 
 class Education(BaseModel):
+    """Formal education entry extracted from a user's resume."""
+
     model_config = ConfigDict(extra="forbid")
 
     institution: str
@@ -48,6 +58,8 @@ class Education(BaseModel):
 
 
 class CourseCertificate(BaseModel):
+    """Course or certificate entry extracted from a user's resume."""
+
     model_config = ConfigDict(extra="forbid")
 
     title: str
@@ -57,6 +69,8 @@ class CourseCertificate(BaseModel):
 
 
 class UserLanguage(BaseModel):
+    """Language and proficiency pair extracted from a user's resume."""
+
     model_config = ConfigDict(extra="forbid")
 
     language: str
@@ -64,6 +78,8 @@ class UserLanguage(BaseModel):
 
 
 class UserProfile(BaseModel):
+    """Structured user profile extracted from resume content."""
+
     model_config = ConfigDict(extra="forbid")
 
     personalInfo: PersonalInfo
