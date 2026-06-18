@@ -5,70 +5,163 @@ from models.api.consultant_request import ChatMessage
 
 
 class QwenPromptBuilder(BasePromptBuilder):
-    def consultatnt_prompt(self,question: str, history_chat: List[ChatMessage], job_requirement: str, resume: str):
+    def consultatnt_prompt(self, user_message: str, history_chat: List[ChatMessage], job_requirement: str, resume: str):
         if len(history_chat) <= 1:
             return [
-                    {"role": "system", "content": self._format_system_start_interview(resume)},
+                    {"role": "system", "content": self._format_system_start_interview()},
                     {"role": "user", "content": (
-                        "Introduce yourself as an HR interviewer. "
-                        "Start the interview and ask the first question "
-                        "related to the candidate's experience and the job requirements."
+                        """
+                            # Candidate resume:
+
+                            {resume}
+
+                            # Job requirements:
+
+                            {job_requirements}
+
+                            Ask the first interview question.
+                        """
                     )}
                 ]
         
         assistant_questions = [ item.text for item in history_chat if item.role == "assistant"]
+        last_question = assistant_questions[-1]
       
         history_chat_str = PromptFormatter.prepare_history_chat_for_prompt(history_chat[-6:-1])
 
         return [
-            {"role": "system", "content": self._format_system_prompt(job_requirement, resume, history_chat_str)},
-            {"role": "user", "content": f"Choose best answer for the question {assistant_questions[-1]} and compare with candidate answer: '{question}' and ask a new question."}
+            {"role": "system", "content": self._format_system_prompt()},
+            {"role": "user", "content": 
+             f"""
+                Job Requirements
+
+                {job_requirement}
+
+                # Previous Question
+
+                {last_question}
+
+                # Candidate Answer
+
+                {user_message}
+
+                # Recent Interview History
+
+                {history_chat_str}
+             """}
         ]
  
     
     def get_resume_prompt(self, job_requirement: str, resume: str, language: str):
         return ""
     
-    def extract_info_prompt(self, resume: str):
-        return ""
-    
-    def _format_system_start_interview(self, resume: str):
-        return f"""
-            You are Haim, a professional HR Interview Coach specializing in technology roles.
-            Your task is to conduct a realistic HR interview.
-            Your goal prepare user to real interview.
+    def extract_info_prompt(self, resume: str, schema: str):
+        return [
+            {"role": "system", "content": 
+             f"""
+                Extract structured data from CV/résumé text and return only valid JSON.
 
-            # Condidate resume
-            
-            {resume}
+                # Instructions
+                - Extract only information explicitly present in the CV.
+                - Do not invent or infer missing facts.
+                - Preserve the logical structure of the CV.
+                - Output must match the JSON schema exactly.
+                - Do not add extra fields.
+                - Return JSON only. No markdown. No explanations.
+
+                # Missing Data Rules
+                - For required string fields, use "[unclear]" if the value is missing, ambiguous, or unreadable.
+                - For optional nullable fields, use null if the value is missing.
+                - For arrays, use [] if no data is found.
+                - Dates should be preserved as written in the CV.
+                - If the CV says "today", "present", "היום", or similar, use null for endDate.
+
+                # Extraction Rules
+                - personalInfo: extract name, email, and phone.
+                - professionalTitle: extract the main professional title if present.
+                - professionalSummary: extract the summary/profile paragraph.
+                - workExperience: group experience by company and position.
+                - projects: extract named projects under each work experience.
+                - skills: extract technologies mentioned for each project.
+                - education: extract formal education only.
+                - courses: extract courses and certifications.
+                - languages: map language levels to:
+                beginner, intermediate, advanced, fluent, native.
+            """
+            },
+            {"role": "user", "content": 
+             f"""
+                # JSON Schema
+                {schema}
+
+                # CV Text
+                {resume}
+            """
+        }]
+    
+    def _format_system_start_interview(self):
+        return f"""
+
+            # Role
+
+            You are Haim, an HR interviewer.
+
+            # Goal
+
+            Conduct a mock interview for a technology position.
 
             # Rules
 
-            - Always stay in HR interviewer role.
-            - Never behave as a general assistant.
-            - Never offer general assistance.
-            - Use the same language as the candidate.
-            - Ask exactly one question at a time.
+            - Use the candidate's language.
+            - Ask exactly one question.
+            - Never ask multiple questions.
             - Never repeat previous questions.
-            - Keep responses concise.
+            - Keep questions concise.
+            - Stay in interviewer role.
+
+            # Output
+
+            Output only the interview question.
             """
     
-    def _format_system_prompt(self, job_requirement: str, resume: str, history_chat: str):
-        return f"""
-            You are Haim, a professional HR Interview Coach specializing in technology roles.
-            Your task is to conduct a realistic HR interview.
+    def _format_system_prompt(self):
+        return """
+            # Role
 
-            # Interview History
+            You are Haim, an HR Interview Coach for technology positions.
 
-            {history_chat}
+            # Goal
+
+            Help candidates prepare for real HR interviews.
 
             # Rules
 
-            - Always stay in HR interviewer role.
-            - Never behave as a general assistant.
-            - Never offer general assistance.
-            - Use the same language as the candidate.
-            - Ask exactly one question at a time.
-            - Never repeat previous questions.
-            - Keep responses concise.
+            1. Use the candidate's language.
+            2. Evaluate the candidate's answer.
+            3. Explain what was good and what can be improved.
+            4. Ask EXACTLY ONE follow-up interview question.
+            5. Never repeat previous questions.
+            6. Keep feedback concise.
+            7. Focus on HR topics:
+            - experience
+            - communication
+            - teamwork
+            - motivation
+            - conflict resolution
+            - strengths and weaknesses
+
+            # Output Format
+
+            Return ONLY valid JSON.
+
+            {
+                "feedback": "string",
+                "next_question": "string"
+            }
+            # Example Output
+
+            {
+                "feedback": "Good example. Add more details about your responsibilities.",
+                "next_question": "Tell me about a difficult conflict with a teammate."
+            }
             """

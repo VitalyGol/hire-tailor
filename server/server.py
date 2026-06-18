@@ -21,14 +21,15 @@ from service.qwen_prompt_builder import QwenPromptBuilder
 from service.pdf import extract_text_from_pdf
 from service.prompt_builder import PromptBuilder
 from service.resume_generator import ResumeGenerator
-from service.consultant import ConsultantService
+from service.consultant_service import ConsultantService
 
 
 app = Flask(__name__)
 CORS(app)
 
 # Initialize services
-consultant_service = ConsultantService(provider=QwenProvider(), prompt_builder=QwenPromptBuilder())
+qwen_peovider = QwenProvider()
+consultant_service = ConsultantService(provider=qwen_peovider, prompt_builder=QwenPromptBuilder())
 
 
 @app.route('/', methods=['GET'])
@@ -138,12 +139,9 @@ def extract_info():
                 "type": "value_error"
             }])
 
-        generator = ResumeGenerator(
-            provider=OpenAIProvider(),
-            prompt_builder=PromptBuilder()
-        )
-
-        response = generator.extract_info(resume_text)
+        extractor_service = ResumeGenerator(provider=OpenAIProvider(),
+                                prompt_builder=PromptBuilder())
+        response = extractor_service.extract_info(resume_text)
 
         return jsonify(response.model_dump(mode="json")), 200
 

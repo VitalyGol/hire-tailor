@@ -43,7 +43,7 @@ class BasePromptBuilder(ABC):
         :return: A prompt string that can be used for information extraction."""
 
     @abstractmethod
-    def consultatnt_prompt(self, question: str, history_chat: List[ChatMessage], job_requirement: str, resume: str):
+    def consultatnt_prompt(self, user_message: str, history_chat: List[ChatMessage], job_requirement: str, resume: str):
         """Abstract method to generate a prompt for consulting a career advisor.
         It takes the user's message, job requirements, and resume content as input 
         and returns a prompt

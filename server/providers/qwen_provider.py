@@ -43,14 +43,15 @@ class QwenProvider(BaseProvider):
 
         self.model.eval()
 
-    def get_data(self, messages):
+    def get_data(self, messages, enable_thinking=False):
         """
         Generate a response from the language model.
         """
         text = self.tokenizer.apply_chat_template(
             messages,
             tokenize=False,
-            add_generation_prompt=True
+            add_generation_prompt=True,
+            enable_thinking=enable_thinking
         )
 
         model_inputs = self.tokenizer(

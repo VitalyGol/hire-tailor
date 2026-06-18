@@ -20,4 +20,4 @@ class Config: # pylint: disable=too-few-public-methods
     OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
     FLASK_ENV = os.getenv("FLASK_ENV", "development")
     ALLOWED_EXTENSIONS = os.getenv("ALLOWED_EXTENSIONS", "pdf").split(',')
-    HR_CHATBOT_MODEL = os.getenv("HR_CHATBOT_MODEL", "Qwen/Qwen2.5-0.5B-Instruct")
+    HR_CHATBOT_MODEL = os.getenv("HR_CHATBOT_MODEL", "Qwen/Qwen3-0.6B")
