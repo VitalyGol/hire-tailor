@@ -10,7 +10,7 @@ class BaseProvider(ABC):
     implement the methods to generate prompts and retrieve data based on those prompts."""
 
     @abstractmethod
-    def get_data(self, prompt):
+    def get_data(self, prompt, enable_thinking=False):
         """Abstract method to retrieve data from the provider based on a given prompt.
         :param prompt: The prompt for which to retrieve data.
         :return: The data retrieved from the provider.
