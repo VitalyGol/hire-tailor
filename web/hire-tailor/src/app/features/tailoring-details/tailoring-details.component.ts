@@ -6,8 +6,10 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
-import { map } from 'rxjs';
+import { filter, map, take } from 'rxjs';
+import { DialogType } from '../../models/shared/dialog-message.model';
 import { EmployerTailoringRequest } from '../../models/shared/employer-tailoring-request.model';
+import { ConfirmDialogService, DialogResult } from '../../services/confirm-dialog.service';
 import { PageCommunicationService } from '../../services/page-communication.service';
 import { TailoringStorageService } from '../../services/tailoring-storage.service';
 
@@ -21,12 +23,14 @@ export class TailoringDetailsComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly messageService = inject(PageCommunicationService);
   private readonly tailoringStorage = inject(TailoringStorageService);
 
   protected readonly offer = signal<EmployerTailoringRequest | null>(null);
   protected readonly requestedId = signal<string | null>(null);
+  private readonly isMarkAsNotRelevantDialogOpen = signal(false);
 
   constructor() {
     this.route.paramMap
@@ -41,6 +45,35 @@ export class TailoringDetailsComponent {
   }
 
   protected markAsNotRelevant(): void {
+    if (this.isMarkAsNotRelevantDialogOpen()) {
+      return;
+    }
+
+    this.isMarkAsNotRelevantDialogOpen.set(true);
+    this.confirmDialog.clearResult();
+    this.confirmDialog.showDialog(
+      DialogType.Confirm,
+      'Mark this tailoring as not relevant?',
+      'This tailoring will be removed from your active list and moved to History. You can restore it from History at any time.',
+    );
+
+    this.confirmDialog.dialogResult$
+      .pipe(
+        filter((result): result is DialogResult => result !== null),
+        take(1),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(result => {
+        this.isMarkAsNotRelevantDialogOpen.set(false);
+        this.confirmDialog.clearResult();
+
+        if (result === DialogResult.Confirmed) {
+          this.archiveCurrentOffer();
+        }
+      });
+  }
+
+  private archiveCurrentOffer(): void {
     const currentOffer = this.offer();
     if (!currentOffer) {
       return;
