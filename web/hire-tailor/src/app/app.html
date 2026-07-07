@@ -1,6 +1,13 @@
 <router-outlet />
 
-@if (spinnerVisible()) {
+@if (dialogMessage(); as dialog) {
+<app-dialog
+  [type]="dialog.type"
+  [title]="dialog.title"
+  [message]="dialog.message"
+  (dialogResult)="closeDialog($event)"
+/>
+} @if (spinnerVisible()) {
 <div class="global-spinner" role="status" aria-live="polite" aria-label="Loading">
   <div class="global-spinner__indicator"></div>
 </div>

@@ -1,0 +1,44 @@
+<div class="dialog-backdrop" role="presentation">
+  <section
+    class="dialog-panel"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-labelledby]="'app-dialog-title'"
+    [attr.aria-describedby]="'app-dialog-message'"
+  >
+    <header class="dialog-header">
+      <mat-icon aria-hidden="true">
+        @switch (type) {
+          @case (dialogType.Confirm) {
+            help
+          }
+          @case (dialogType.Warning) {
+            warning
+          }
+          @case (dialogType.Error) {
+            error
+          }
+          @default {
+            info
+          }
+        }
+      </mat-icon>
+      <h2 id="app-dialog-title">{{ title }}</h2>
+    </header>
+
+    <div id="app-dialog-message" class="dialog-content">
+      {{ message }}
+    </div>
+
+    <footer class="dialog-actions">
+      @if (type === dialogType.Confirm) {
+        <button mat-button type="button" (click)="dialogResult.emit(result.Canceled)">Cancel</button>
+        <button mat-flat-button type="button" color="primary" (click)="dialogResult.emit(result.Confirmed)">
+          Confirm
+        </button>
+      } @else {
+        <button mat-flat-button type="button" color="primary" (click)="dialogResult.emit(result.Ok)">OK</button>
+      }
+    </footer>
+  </section>
+</div>
