@@ -32,10 +32,11 @@
 
     <footer class="dialog-actions">
       @if (type === dialogType.Confirm) {
-        <button mat-button type="button" (click)="dialogResult.emit(result.Canceled)">Cancel</button>
         <button mat-flat-button type="button" color="primary" (click)="dialogResult.emit(result.Confirmed)">
           Confirm
         </button>
+        <button mat-button type="button" (click)="dialogResult.emit(result.Canceled)">Cancel</button>
+        
       } @else {
         <button mat-flat-button type="button" color="primary" (click)="dialogResult.emit(result.Ok)">OK</button>
       }
