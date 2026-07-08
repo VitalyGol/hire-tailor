@@ -18,10 +18,10 @@ class PdfJsonExtractor(BaseExtractor):
             prompt = get_pdf_json_prompt(content)
             data = self.provider.get_parsed_data(prompt, text_format=UserProfile)
             return data
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             print(f"Error while extracting data from PDF: {e}")
             return None
-    
+
     def _extract_text_from_pdf(self,pdf_bytes: bytes) -> str:
 
         if not pdf_bytes:
