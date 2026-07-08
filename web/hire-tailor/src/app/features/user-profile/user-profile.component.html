@@ -412,6 +412,25 @@
     </mat-card>
 
     <div class="sticky-actions">
+      <button
+        mat-flat-button
+        type="submit"
+        [disabled]="profileForm.invalid || !isProfileChanged()"
+        (click)="saveProfile()"
+      >
+        <mat-icon>save</mat-icon>
+        Save Profile
+      </button>
+      <button
+        mat-stroked-button
+        type="button"
+        [disabled]="!canCancelProfileChanges()"
+        (click)="cancelProfileChanges()"
+      >
+        <mat-icon>undo</mat-icon>
+        Cancel changes
+      </button>
+      <div class="divider"></div>
       <input
         #resumeInput
         class="file-input"
@@ -428,14 +447,7 @@
         <mat-icon>upload_file</mat-icon>
         {{ isUploadingResume() ? 'Uploading Resume' : 'Extract Data From Resume' }}
       </button>
-      <button
-        mat-flat-button
-        [disabled]="profileForm.invalid || profileForm.pristine"
-        (click)="saveProfile()"
-      >
-        <mat-icon>save</mat-icon>
-        Save Profile
-      </button>
+      
     </div>
   </form>
 </section>

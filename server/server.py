@@ -14,9 +14,10 @@ from flask_cors import CORS
 from pydantic import ValidationError
 from core.config import Config
 from providers.openai_provider import OpenAIProvider
+from providers.openai_langchain_provider import OpenAILangChainProvider
 from models.api.consultant_request import ConsultantRequest
 from models.api.resume_request import ResumeRequest
-from service.pdf import extract_text_from_pdf
+from service.extractors.pdf_json_extractor import PdfJsonExtractor
 from service.prompt_builder import PromptBuilder
 from service.resume_generator import ResumeGenerator
 from service.consultant import ConsultantService
@@ -24,6 +25,8 @@ from service.consultant import ConsultantService
 
 app = Flask(__name__)
 CORS(app)
+
+openai_provider=OpenAILangChainProvider()
 
 @app.route('/consultant/ask', methods=['POST'])
 def ask_consultant():
@@ -119,21 +122,11 @@ def extract_info():
                 "type": "value_error"
             }])
 
-        resume_text = extract_text_from_pdf(pdf_bytes)
-
-        if not resume_text.strip():
-            raise ValidationError([{
-                "loc": ["file", "content"],
-                "msg": "Could not extract text from PDF",
-                "type": "value_error"
-            }])
-
-        generator = ResumeGenerator(
-            provider=OpenAIProvider(),
-            prompt_builder=PromptBuilder()
+        extractor = PdfJsonExtractor(
+            provider=openai_provider,
         )
 
-        response = generator.extract_info(resume_text)
+        response = extractor.extract_data(pdf_bytes)
 
         return jsonify(response.model_dump(mode="json")), 200
 
