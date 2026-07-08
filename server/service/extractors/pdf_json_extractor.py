@@ -10,7 +10,7 @@ from prompts.extractors.pdf_json_prompt import get_pdf_json_prompt
 
 class PdfJsonExtractor(BaseExtractor):
     def __init__(self, provider: BaseProvider):
-        self.provider = provider;
+        self.provider = provider
 
     def extract_data(self, input_data: bytes) -> UserProfile:
         try:
