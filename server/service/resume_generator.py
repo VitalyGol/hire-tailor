@@ -49,15 +49,3 @@ class ResumeGenerator:
             language, job_requirement, resume_str)
         data = self.provider.get_parsed_data(prompt, text_format=ResumeModel)
         return data
-
-    def extract_info(self, resume: str):
-        """
-        Method to extract structured information from an existing resume.
-        It creates a prompt using the prompt builder and retrieves the extracted information
-        from the provider.
-        :param resume: The existing resume content from which to extract information.
-        :return: A UserProfile instance containing the extracted information.
-        """
-        prompt = self.prompt_builder.extract_info_prompt(resume)
-        data = self.provider.get_parsed_data(prompt, text_format=UserProfile)
-        return data

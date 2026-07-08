@@ -42,6 +42,12 @@ h1 {
   gap: 10px;
 }
 
+.sticky-actions {
+  .divider {
+    flex: 1;
+  }
+}
+
 .header-actions button,
 .sticky-actions button,
 mat-card-header button,

@@ -17,7 +17,7 @@ class BaseProvider(ABC):
         """
 
     @abstractmethod
-    def get_parsed_data(self, prompt, text_format='text'):
+    def get_parsed_data(self, prompt, text_format):
         """Abstract method to retrieve parsed data from the provider based on a given prompt.
         :param prompt: The prompt for which to retrieve parsed data.
         :param text_format: The format in which to return the data.
