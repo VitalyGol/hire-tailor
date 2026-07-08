@@ -9,6 +9,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Component, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -83,6 +84,18 @@ export class UserProfileComponent {
   protected readonly isUploadingResume = signal(false);
   protected readonly hasResumeFile = computed(() => this.selectedResumeFileName() !== null);
 
+  private readonly savedProfileSnapshot = signal<string | null>(null);
+  private readonly currentProfileSnapshot = signal('');
+
+  protected readonly isProfileChanged = computed(
+    () => this.currentProfileSnapshot() !== this.savedProfileSnapshot(),
+  );
+  protected readonly canCancelProfileChanges = computed(() => {
+    const savedSnapshot = this.savedProfileSnapshot();
+
+    return savedSnapshot !== null && this.currentProfileSnapshot() !== savedSnapshot;
+  });
+
   protected readonly profileForm: UserProfileForm = new FormGroup({
     personalInfo: new FormGroup({
       firstName: this.createTextControl([Validators.required, Validators.minLength(2)]),
@@ -98,6 +111,10 @@ export class UserProfileComponent {
 
   constructor() {
     this.loadProfileFromStorage();
+    this.syncCurrentProfileSnapshot();
+    this.profileForm.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => this.syncCurrentProfileSnapshot());
   }
 
   protected addSkill(event: MatChipInputEvent, skillsControl: FormControl<string[]>): void {
@@ -201,13 +218,32 @@ export class UserProfileComponent {
       return;
     }
 
-    if (this.tailoringStorage.saveUserProfile(this.toUserProfile())) {
+    const profile = this.toUserProfile();
+
+    if (this.tailoringStorage.saveUserProfile(profile)) {
+      this.savedProfileSnapshot.set(this.serializeProfile(profile));
+      this.syncCurrentProfileSnapshot();
       this.profileForm.markAsPristine();
       this.snackBar.open('Profile saved successfully.', 'Close', { duration: 3000 });
       return;
     }
 
     this.snackBar.open('Profile could not be saved.', 'Close', { duration: 4000 });
+  }
+
+  protected cancelProfileChanges(): void {
+    const profile = this.tailoringStorage.getUserProfile();
+
+    if (!profile) {
+      this.savedProfileSnapshot.set(null);
+      this.syncCurrentProfileSnapshot();
+      return;
+    }
+
+    this.savedProfileSnapshot.set(this.serializeProfile(profile));
+    this.loadProfileIntoForm(profile);
+    this.profileForm.markAsPristine();
+    this.syncCurrentProfileSnapshot();
   }
 
   protected onResumeFileSelected(event: Event): void {
@@ -380,11 +416,20 @@ export class UserProfileComponent {
     const profile = this.tailoringStorage.getUserProfile();
 
     if (profile) {
-      this.loadProfileFromResume(profile);
+      this.savedProfileSnapshot.set(this.serializeProfile(profile));
+      this.loadProfileIntoForm(profile);
+      this.profileForm.markAsPristine();
     }
   }
 
   private loadProfileFromResume(profile: UserProfile): void {
+    this.loadProfileIntoForm(profile);
+    this.syncCurrentProfileSnapshot();
+  }
+
+  private loadProfileIntoForm(profile: UserProfile): void {
+    this.clearProfileForm();
+
     this.personalInfo.setValue({
       firstName: profile.personalInfo.firstName,
       lastName: profile.personalInfo.lastName,
@@ -401,6 +446,31 @@ export class UserProfileComponent {
       this.createCourseCertificateForm(item),
     );
     this.replaceFormArray(this.languages, profile.languages, item => this.createLanguageForm(item));
+  }
+
+  private syncCurrentProfileSnapshot(): void {
+    this.currentProfileSnapshot.set(this.serializeProfile(this.toUserProfile()));
+  }
+
+  private serializeProfile(profile: UserProfile): string {
+    return JSON.stringify(profile);
+  }
+
+  private clearProfileForm(): void {
+    this.personalInfo.reset({
+      firstName: '',
+      lastName: '',
+      email: '',
+      phoneNumber: '',
+    });
+    this.replaceFormArray(this.workExperience, [undefined], item =>
+      this.createWorkExperienceForm(item),
+    );
+    this.replaceFormArray(this.education, [undefined], item => this.createEducationForm(item));
+    this.replaceFormArray(this.courses, [undefined], item =>
+      this.createCourseCertificateForm(item),
+    );
+    this.replaceFormArray(this.languages, [undefined], item => this.createLanguageForm(item));
   }
 
   private replaceFormArray<TControl extends AbstractControl, TValue>(

@@ -414,14 +414,20 @@
     <div class="sticky-actions">
       <button
         mat-flat-button
-        [disabled]="profileForm.invalid || profileForm.pristine"
+        type="submit"
+        [disabled]="profileForm.invalid || !isProfileChanged()"
         (click)="saveProfile()"
       >
         <mat-icon>save</mat-icon>
         Save Profile
       </button>
-       <button mat-flat-button>
-        <mat-icon>save</mat-icon>
+      <button
+        mat-stroked-button
+        type="button"
+        [disabled]="!canCancelProfileChanges()"
+        (click)="cancelProfileChanges()"
+      >
+        <mat-icon>undo</mat-icon>
         Cancel changes
       </button>
       <div class="divider"></div>
